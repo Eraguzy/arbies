@@ -9,29 +9,59 @@ import { Button } from "@/components/ui/button";
 
 export default function DexesSelector(
 	{ selected,
-		setSelected
+		setSelected,
+		multiple = false,
+		defaultSelected,
+		disabled = false,
 	}: {
 		selected: string[];
-		setSelected: React.Dispatch<React.SetStateAction<string[]>>
+		setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+		multiple?: boolean;
+		defaultSelected: boolean;
+		disabled?: boolean;
 	}) {
+
 	const [dexes, setDexes] = React.useState<string[]>([]);
 	const toggle = (opt: string) => {
-		if (selected.includes(opt)) setSelected(selected.filter(s => s !== opt));
-		else setSelected([...selected, opt]);
+		if (selected.includes(opt)) {
+			setSelected(selected.filter(s => s !== opt));
+		}
+		else if (multiple) {
+			setSelected([...selected, opt]);
+		} else {
+			setSelected([opt]);
+		}
 	}
 
 	React.useEffect(() => {
 		fetch("/api/dexes/list")
 			.then(res => res.json())
-			.then(setDexes)
+			.then(res => {
+				setDexes(res);
+				setSelected(defaultSelected ? res : []);
+			});
 	}, [])
 
 	return (
 		<Popover>
 			<PopoverTrigger>
-				<Button>Select Dexes</Button>
+				<Button className="cursor-pointer" disabled={disabled}>
+					{multiple ?
+						`Select DEXes` :
+						(selected.length > 0 ?
+							selected[0] :
+							"Select DEX")
+					}
+				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="w-30 p-1 gap-1">
+
+			<PopoverContent
+				className="w-30 p-1 gap-1"
+				side="bottom"
+				align="start"
+				sideOffset={4}
+				sticky="partial"
+			>
 				{dexes.map((opt) => (
 					<div
 						key={opt}
