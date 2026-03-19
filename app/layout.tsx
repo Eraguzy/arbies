@@ -14,6 +14,8 @@ import {
   MenubarRadioGroup,
   MenubarRadioItem,
 } from "@/components/ui/menubar"
+import { Button } from "@/components/ui/button"
+import { MoonStar, SunIcon } from 'lucide-react'
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -42,6 +44,7 @@ export default function RootLayout({
 }>) {
   const router = useRouter();
   const [mode, setMode] = React.useState<string>("funding");
+  const [theme, setTheme] = React.useState<boolean>(false);
 
   const modeOptions = {
     fundingValue: "funding",
@@ -54,6 +57,9 @@ export default function RootLayout({
     setMode(value);
     router.push(value === modeOptions.fundingValue ? "/" + modeOptions.fundingValue : "/" + modeOptions.lendingValue);
   }
+  const handleThemeChange = () => {
+    setTheme((prev) => !prev);
+  };
 
   return (
     <html
@@ -62,23 +68,40 @@ export default function RootLayout({
       className={cn("antialiased", fontMono.variable, "font-sans", fontSans.variable)}
     >
       <body className="min-h-screen bg-background text-foreground">
-        {/* <ThemeProvider enableSystem forcedTheme="light"> */}
-        <ThemeProvider>
+        <ThemeProvider enableSystem forcedTheme={theme ? "dark" : "light"}>
           {/* only on large screen*/}
           <div className="hidden md:block">
-            <Menubar className="gap-4 h-12 px-4 border-b">
-              <div className="select-none text-xl text-primary">
-                Arbies
+            <Menubar className="h-12 px-4 border-b flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="select-none text-xl text-primary">Arbies</div>
+
+                <MenubarMenu>
+                  <MenubarTrigger>Mode</MenubarTrigger>
+                  <MenubarContent>
+                    <MenubarRadioGroup value={mode} onValueChange={handleModeChange}>
+                      <MenubarRadioItem value={modeOptions.fundingValue}>{modeOptions.fundingText}</MenubarRadioItem>
+                      <MenubarRadioItem value={modeOptions.lendingValue}>{modeOptions.lendingText}</MenubarRadioItem>
+                    </MenubarRadioGroup>
+                  </MenubarContent>
+                </MenubarMenu>
               </div>
-              <MenubarMenu>
-                <MenubarTrigger>Mode</MenubarTrigger>
-                <MenubarContent>
-                  <MenubarRadioGroup value={mode} onValueChange={handleModeChange}>
-                    <MenubarRadioItem value={modeOptions.fundingValue}>{modeOptions.fundingText}</MenubarRadioItem>
-                    <MenubarRadioItem value={modeOptions.lendingValue}>{modeOptions.lendingText}</MenubarRadioItem>
-                  </MenubarRadioGroup>
-                </MenubarContent>
-              </MenubarMenu>
+
+              <div className="flex items-center">
+                <Button
+                  onClick={() => window.open("https://github.com/eraguzy/arbies", "_blank")}
+                  className="rounded-full bg-background p-2 hover:bg-muted cursor-pointer"
+                >
+                  <img src="/github.png" alt="Github" className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  onClick={handleThemeChange}
+                  className="rounded-full bg-background p-2 hover:bg-muted cursor-pointer"
+                >
+                  {theme ? <SunIcon className="h-4 w-4 text-white" /> : <MoonStar className="h-4 w-4 text-black" />}
+                </Button>
+              </div>
+
             </Menubar>
 
             {children}
