@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider"
 import { Geist, Geist_Mono } from "next/font/google"
+import { useTheme } from "next-themes"
 import "./globals.css"
 import {
   Menubar,
@@ -37,6 +38,19 @@ function ScreenFallback() {
   )
 }
 
+function ThemeToggleButton() {
+  const { setTheme, resolvedTheme } = useTheme();
+
+  return (
+    <Button
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      className="rounded-full bg-background p-2 hover:bg-muted cursor-pointer"
+    >
+      {resolvedTheme === "dark" ? <SunIcon className="h-4 w-4 text-white" /> : <MoonStar className="h-4 w-4 text-black" />}
+    </Button>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -44,7 +58,6 @@ export default function RootLayout({
 }>) {
   const router = useRouter();
   const [mode, setMode] = React.useState<string>("funding");
-  const [theme, setTheme] = React.useState<boolean>(false);
 
   const modeOptions = {
     fundingValue: "funding",
@@ -57,9 +70,6 @@ export default function RootLayout({
     setMode(value);
     router.push(value === modeOptions.fundingValue ? "/" + modeOptions.fundingValue : "/" + modeOptions.lendingValue);
   }
-  const handleThemeChange = () => {
-    setTheme((prev) => !prev);
-  };
 
   return (
     <html
@@ -68,7 +78,7 @@ export default function RootLayout({
       className={cn("antialiased", fontMono.variable, "font-sans", fontSans.variable)}
     >
       <body className="min-h-screen bg-background text-foreground">
-        <ThemeProvider enableSystem forcedTheme={theme ? "dark" : "light"}>
+        <ThemeProvider enableSystem>
           {/* only on large screen*/}
           <div className="hidden md:block">
             <Menubar className="h-12 px-4 border-b flex items-center justify-between">
@@ -91,20 +101,19 @@ export default function RootLayout({
                   onClick={() => window.open("https://github.com/eraguzy/arbies", "_blank")}
                   className="rounded-full bg-background p-2 hover:bg-muted cursor-pointer"
                 >
-                  <img src="/github.png" alt="Github" className="h-4 w-4" />
+                  <img src="/github.png" alt="Github" className="h-4 w-4 dark:invert" />
                 </Button>
 
-                <Button
-                  onClick={handleThemeChange}
-                  className="rounded-full bg-background p-2 hover:bg-muted cursor-pointer"
-                >
-                  {theme ? <SunIcon className="h-4 w-4 text-white" /> : <MoonStar className="h-4 w-4 text-black" />}
-                </Button>
+                <ThemeToggleButton />
               </div>
 
             </Menubar>
 
-            {children}
+            <div className="flex w-full justify-center px-4">
+              <section className="w-full max-w-6xl flex-1 py-6">
+                {children}
+              </section>
+            </div>
           </div>
 
           {/* fallback if too small */}
