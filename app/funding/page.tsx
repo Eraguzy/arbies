@@ -7,9 +7,6 @@ import React from "react";
 export default function Funding() {
 	const [selected, setSelected] = React.useState<string[]>([]); // horizontal axis
 	const [compared, setCompared] = React.useState<string[]>([]); // vertical axis
-	React.useEffect(() => {
-		console.log("Selected DEXes:", selected);
-	}, [selected])
 
 	return (
 		<div>
