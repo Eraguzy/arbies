@@ -1,11 +1,13 @@
 "use client";
 
 import DexesSelector from "@/components/selectors/dexes";
+import AssetSelector from "@/components/selectors/assets";
 import { Table, TableCaption, TableHeader, TableRow, TableCell, TableHead, TableBody, } from "@/components/ui/table";
 import React from "react";
 
 export default function Funding() {
 	const [selected, setSelected] = React.useState<string[]>([]); // horizontal axis
+	const [pairs, setPairs] = React.useState<string[]>([]); // selected pairs
 	const [compared, setCompared] = React.useState<string[]>([]); // vertical axis
 
 	return (
@@ -25,6 +27,13 @@ export default function Funding() {
 						multiple
 						defaultSelected={false}
 						disabled={selected.length === 0}
+					/>
+					on
+					<AssetSelector
+						selected={pairs}
+						setSelected={setPairs}
+						defaultSelected={true}
+						disabled={selected.length === 0 || compared.length === 0}
 					/>
 				</div>
 				<h1 className="text-2xl font-bold">{compared.length > 0 && selected.length > 0 ? "Fundings Comparison" : "Fundings"}</h1>

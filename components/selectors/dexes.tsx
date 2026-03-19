@@ -22,7 +22,10 @@ export default function DexesSelector(
 	}) {
 
 	const [dexes, setDexes] = React.useState<string[]>([]);
+	const [open, setOpen] = React.useState(false);
 	const toggle = (opt: string) => {
+		if (disabled) return;
+
 		if (selected.includes(opt)) {
 			setSelected(selected.filter(s => s !== opt));
 		}
@@ -43,7 +46,12 @@ export default function DexesSelector(
 	}, [])
 
 	return (
-		<Popover>
+		<Popover
+			open={open}
+			onOpenChange={(nextOpen) => {
+				disabled ? setOpen(false) : setOpen(nextOpen);
+			}}
+		>
 			<PopoverTrigger>
 				<Button className="cursor-pointer" disabled={disabled}>
 					{multiple ?

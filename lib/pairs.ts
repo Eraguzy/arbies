@@ -20,7 +20,7 @@ export type Pair = {
 export type PairRecord = Record<string, Pair>
 export type PairWithArbies = Record<string, Pair>
 
-function formatSlashPair(asset: keyof typeof Assets, collateral: keyof typeof Collats): string {
+export function formatSlashPair(asset: keyof typeof Assets, collateral: keyof typeof Collats): string {
   return `${asset}/${collateral}`;
 }
 
