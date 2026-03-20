@@ -6,6 +6,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
+import { AllDexes } from "@/lib/funding/dexes/arbies";
 
 export default function DexesSelector(
 	{ selected,
@@ -21,7 +22,6 @@ export default function DexesSelector(
 		disabled?: boolean;
 	}) {
 
-	const [dexes, setDexes] = React.useState<string[]>([]);
 	const [open, setOpen] = React.useState(false);
 	const toggle = (opt: string) => {
 		if (disabled) return;
@@ -37,12 +37,7 @@ export default function DexesSelector(
 	}
 
 	React.useEffect(() => {
-		fetch("/api/dexes/list")
-			.then(res => res.json())
-			.then(res => {
-				setDexes(res);
-				setSelected(defaultSelected ? res : []);
-			});
+		setSelected(defaultSelected ? Object.values(AllDexes) : []);
 	}, [])
 
 	return (
@@ -70,10 +65,10 @@ export default function DexesSelector(
 				sideOffset={4}
 				sticky="partial"
 			>
-				{dexes.map((opt) => (
+				{Object.values(AllDexes).map((opt) => (
 					<div
 						key={opt}
-						className="flex w-full min-h-10 items-center gap-3 rounded-md px-3 transition-colors hover:bg-accent/60 cursor-pointer"
+						className="flex w-full min-h-10 items-center gap-3 rounded-md px-3 transition-colors hover:bg-accent/60 cursor-pointer select-none"
 						onClick={() => toggle(opt)}
 					>
 						<Checkbox

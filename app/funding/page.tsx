@@ -1,14 +1,33 @@
 "use client";
 
+import React from "react";
 import DexesSelector from "@/components/selectors/dexes";
 import AssetSelector from "@/components/selectors/assets";
-import { Table, TableCaption, TableHeader, TableRow, TableCell, TableHead, TableBody, } from "@/components/ui/table";
-import React from "react";
+import TableFundings from "./components/table-fundings";
 
+export const FundingContext = React.createContext({
+	selected: [] as string[], // horizontal axis
+	compared: [] as string[], // vertical axis
+	pairs: [] as string[], // selected pairs
+	comparisonMode: false, // choose between funding mode and comparison mode
+});
+
+// component with two modes : funding and comparison.
+// if in funding mode (no comparison selected), show the funding for each pair and dex
+// if in comparison mode (comparison selected), show the difference in funding between the selected dexes for each pair
 export default function Funding() {
 	const [selected, setSelected] = React.useState<string[]>([]); // horizontal axis
-	const [pairs, setPairs] = React.useState<string[]>([]); // selected pairs
 	const [compared, setCompared] = React.useState<string[]>([]); // vertical axis
+	const [pairs, setPairs] = React.useState<string[]>([]); // selected pairs
+	const [comparisonMode, setComparisonMode] = React.useState<boolean>(false); // choose between funding mode and comparison mode
+
+	React.useEffect(() => {
+		setComparisonMode(compared.length > 0 && selected.length > 0);
+	}, [compared, selected]);
+
+	React.useEffect(() => {
+		if (selected.length === 0) setCompared([]);
+	}, [selected]);
 
 	return (
 		<div>
@@ -33,39 +52,15 @@ export default function Funding() {
 						selected={pairs}
 						setSelected={setPairs}
 						defaultSelected={true}
-						disabled={selected.length === 0 || compared.length === 0}
+						disabled={selected.length === 0}
 					/>
 				</div>
-				<h1 className="text-2xl font-bold">{compared.length > 0 && selected.length > 0 ? "Fundings Comparison" : "Fundings"}</h1>
+				<h1 className="text-2xl font-bold">{comparisonMode ? "Fundings Comparison" : "Fundings"}</h1>
 			</div>
-			<Table>
-				{selected.length !== 0 && <TableCaption>Click on a cell to view history (WIP)</TableCaption>}
 
-				<TableHeader>
-					<TableRow>
-						{
-							selected.length === 0 ? (
-								<TableHead className="flex justify-center">Select a DEX to view history</TableHead>
-							) : (
-								<>
-									<TableHead className="w-25">Asset</TableHead>
-									{selected.map((dex) => (
-										<TableHead key={dex} className="w-25">{dex}</TableHead>
-									))}
-								</>
-							)
-						}
-					</TableRow>
-				</TableHeader>
-
-				<TableBody>
-					{compared.map((dex) => (
-						<TableRow>
-							<TableCell key={dex} className="h-15">{dex}</TableCell>
-						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+			<FundingContext value={{ selected, compared, pairs, comparisonMode }}>
+				<TableFundings />
+			</FundingContext>
 		</div>
 	);
 }

@@ -1,5 +1,3 @@
-// match the pair format used by other exchanges with the local one
-
 export const Assets = {
   BTC: "BTC",
   ETH: "ETH",
@@ -24,6 +22,10 @@ export function formatSlashPair(asset: keyof typeof Assets, collateral: keyof ty
   return `${asset}/${collateral}`;
 }
 
+export function formatSlashPair2(pair: Pair): string {
+  return `${pair.asset}/${pair.collateral}`;
+}
+
 // locally storaged pairs, registery matched with their asset and collateral
 export const ArbiesPairRegistry: PairRecord = {
   [formatSlashPair(Assets.BTC, Collats.USDC)]:
@@ -34,20 +36,4 @@ export const ArbiesPairRegistry: PairRecord = {
     { asset: Assets.SOL, collateral: Collats.USDC },
   [formatSlashPair(Assets.HYPE, Collats.USDC)]:
     { asset: Assets.HYPE, collateral: Collats.USDC }
-}
-
-// match HL pairs with the local registry 
-export const HLPairRegistry: PairWithArbies = {
-  "BTC": ArbiesPairRegistry[formatSlashPair(Assets.BTC, Collats.USDC)],
-  "ETH": ArbiesPairRegistry[formatSlashPair(Assets.ETH, Collats.USDC)],
-  "SOL": ArbiesPairRegistry[formatSlashPair(Assets.SOL, Collats.USDC)],
-  "HYPE": ArbiesPairRegistry[formatSlashPair(Assets.HYPE, Collats.USDC)]
-}
-
-// match Lighter pairs with the local registry 
-export const LighterPairRegistry: PairWithArbies = {
-  "BTC": ArbiesPairRegistry[formatSlashPair(Assets.BTC, Collats.USDC)],
-  "ETH": ArbiesPairRegistry[formatSlashPair(Assets.ETH, Collats.USDC)],
-  "SOL": ArbiesPairRegistry[formatSlashPair(Assets.SOL, Collats.USDC)],
-  "HYPE": ArbiesPairRegistry[formatSlashPair(Assets.HYPE, Collats.USDC)]
 }
