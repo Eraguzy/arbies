@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
-import { PairRecord } from "@/lib/pairs";
+import { Assets } from "@/lib/funding/assets";
 
 export default function AssetSelector(
   { selected,
@@ -20,7 +20,6 @@ export default function AssetSelector(
     disabled?: boolean;
   }) {
 
-  const [assets, setAssets] = React.useState<string[]>([]);
   const [open, setOpen] = React.useState(false);
   const toggle = (opt: string) => {
     if (disabled) return;
@@ -34,13 +33,10 @@ export default function AssetSelector(
   }
 
   React.useEffect(() => {
-    fetch("/api/pairs/list")
-      .then(res => res.json())
-      .then((res: PairRecord) => {
-        setAssets(Object.values(res).map((opt) => opt.asset));
-        setSelected(defaultSelected ? Object.values(res).map((opt) => opt.asset) : []);
-      });
-  }, [])
+    if (defaultSelected) {
+      setSelected(Object.values(Assets));
+    }
+  }, []);
 
   return (
     <Popover
@@ -60,10 +56,10 @@ export default function AssetSelector(
         sideOffset={4}
         sticky="partial"
       >
-        {assets.map((opt) => (
+        {Object.values(Assets).map((opt) => (
           <div
             key={opt}
-            className="flex w-full min-h-10 items-center gap-3 rounded-md px-3 transition-colors hover:bg-accent/60 cursor-pointer"
+            className="flex w-full min-h-10 items-center gap-3 rounded-md px-3 transition-colors hover:bg-accent/60 cursor-pointer select-none"
             onClick={() => toggle(opt)}
           >
             <Checkbox
