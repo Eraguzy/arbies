@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { FundingContext } from "../page";
 
 function ComparisonModeRows() {
-  const { selected, compared } = useContext(FundingContext);
+  const { selected, compared, pairs } = useContext(FundingContext);
 
   return (
     <>
@@ -19,15 +19,18 @@ function ComparisonModeRows() {
               ))
             }
           </TableRow>
-          {
-            // show the pair only if exists on the DEX
-            DexesPairsMapping[dex] && Object.entries(DexesPairsMapping[dex]).length > 0 ? (
-              Object.entries(DexesPairsMapping[dex]).map(([asset]) => (
-                <TableRow key={asset}>
-                  <TableCell className="h-10">{asset}</TableCell>
-                </TableRow>
-              ))
-            ) : null
+          {DexesPairsMapping[dex] && Object.entries(DexesPairsMapping[dex]).length > 0 ? (
+            Object.entries(DexesPairsMapping[dex]).map(([asset]) => {
+              if (pairs.length === 0 || pairs.includes(asset)) {
+                return (
+                  <TableRow key={asset}>
+                    <TableCell className="h-10">{asset}</TableCell>
+                  </TableRow>
+                )
+              }
+              return null
+            })
+          ) : null
           }
         </>
       )
