@@ -1,0 +1,1 @@
+export const HLApiUrl = 'https://api.hyperliquid.xyz/info';
