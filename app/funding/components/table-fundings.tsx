@@ -1,10 +1,11 @@
+import { useContext, useState } from "react";
 import { DexesPairsMapping } from "@/lib/funding/dexes/arbies";
 import { Table, TableCaption, TableHeader, TableRow, TableCell, TableHead, TableBody } from "@/components/ui/table";
-import { useContext } from "react";
+import AssetSelector from "@/components/selectors/assets";
 import { FundingContext } from "../page";
 
-function ComparisonModeRows() {
-  const { selected, compared, pairs } = useContext(FundingContext);
+function ComparisonModeRows({ pairs }: { pairs: string[] }) {
+  const { selected, compared } = useContext(FundingContext);
 
   return (
     <>
@@ -21,7 +22,7 @@ function ComparisonModeRows() {
           </TableRow>
           {DexesPairsMapping[dex] && Object.entries(DexesPairsMapping[dex]).length > 0 ? (
             Object.entries(DexesPairsMapping[dex]).map(([asset]) => {
-              if (pairs.length === 0 || pairs.includes(asset)) {
+              if (pairs.includes(asset)) {
                 return (
                   <TableRow key={asset}>
                     <TableCell className="h-10">{asset}</TableCell>
@@ -30,18 +31,14 @@ function ComparisonModeRows() {
               }
               return null
             })
-          ) : null
-          }
+          ) : null}
         </>
-      )
-      }
+      )}
     </>
   );
 }
 
-function FundingModeRows() {
-  const { pairs } = useContext(FundingContext);
-
+function FundingModeRows({ pairs }: { pairs: string[] }) {
   return (
     <>
       {pairs.map((pair) => (
@@ -55,6 +52,7 @@ function FundingModeRows() {
 
 export default function TableFundings() {
   const { selected, comparisonMode } = useContext(FundingContext);
+  const [pairs, setPairs] = useState<string[]>([]); // selected pairs
 
   return (
     <Table>
@@ -62,26 +60,31 @@ export default function TableFundings() {
 
       <TableHeader>
         <TableRow>
-          {
-            selected.length === 0 ? (
-              <TableHead className="flex items-center justify-center bg-secondary">Select a DEX to view history</TableHead>
-            ) : (
-              <>
-                <TableHead className="w-25 bg-secondary">Asset</TableHead>
-                {selected.map((dex) => (
-                  <TableHead key={dex} className="w-25 bg-secondary">{dex}</TableHead>
-                ))}
-              </>
-            )
-          }
+          {selected.length === 0 ? (
+            <TableHead className="flex items-center justify-center bg-secondary">Select a DEX to view history</TableHead>
+          ) : (
+            <>
+              <TableHead className="w-25 bg-secondary">
+                <AssetSelector
+                  selected={pairs}
+                  setSelected={setPairs}
+                  defaultSelected={true}
+                  disabled={selected.length === 0}
+                />
+              </TableHead>
+              {selected.map((dex) => (
+                <TableHead key={dex} className="w-25 bg-secondary">{dex}</TableHead>
+              ))}
+            </>
+          )}
         </TableRow>
       </TableHeader>
 
       <TableBody>
         {comparisonMode ? (
-          <ComparisonModeRows />
+          <ComparisonModeRows pairs={pairs} />
         ) :
-          <FundingModeRows />
+          <FundingModeRows pairs={pairs} />
         }
       </TableBody>
     </Table >
