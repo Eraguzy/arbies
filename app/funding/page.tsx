@@ -2,13 +2,11 @@
 
 import React from "react";
 import DexesSelector from "@/components/selectors/dexes";
-import AssetSelector from "@/components/selectors/assets";
 import TableFundings from "./components/table-fundings";
 
 export const FundingContext = React.createContext({
 	selected: [] as string[], // horizontal axis
 	compared: [] as string[], // vertical axis
-	pairs: [] as string[], // selected pairs
 	comparisonMode: false, // choose between funding mode and comparison mode
 });
 
@@ -18,7 +16,6 @@ export const FundingContext = React.createContext({
 export default function Funding() {
 	const [selected, setSelected] = React.useState<string[]>([]); // horizontal axis
 	const [compared, setCompared] = React.useState<string[]>([]); // vertical axis
-	const [pairs, setPairs] = React.useState<string[]>([]); // selected pairs
 	const [comparisonMode, setComparisonMode] = React.useState<boolean>(false); // choose between funding mode and comparison mode
 
 	React.useEffect(() => {
@@ -47,18 +44,11 @@ export default function Funding() {
 						defaultSelected={false}
 						disabled={selected.length === 0}
 					/>
-					on
-					<AssetSelector
-						selected={pairs}
-						setSelected={setPairs}
-						defaultSelected={true}
-						disabled={selected.length === 0}
-					/>
 				</div>
 				<h1 className="text-2xl font-bold">{comparisonMode ? "Fundings Comparison" : "Fundings"}</h1>
 			</div>
 
-			<FundingContext value={{ selected, compared, pairs, comparisonMode }}>
+			<FundingContext value={{ selected, compared, comparisonMode }}>
 				<TableFundings />
 			</FundingContext>
 		</div>
