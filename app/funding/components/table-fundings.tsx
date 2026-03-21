@@ -1,10 +1,11 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { DexesPairsMapping } from "@/lib/funding/dexes/arbies";
 import { Table, TableCaption, TableHeader, TableRow, TableCell, TableHead, TableBody } from "@/components/ui/table";
 import AssetSelector from "@/components/selectors/assets";
 import { FundingContext } from "../page";
+import { HTTPParams } from "@/app/api/req-params";
 
-function ComparisonModeRows({ pairs }: { pairs: string[] }) {
+function ComparisonModeRows({ assets }: { assets: string[] }) {
   const { selected, compared } = useContext(FundingContext);
 
   return (
@@ -22,7 +23,7 @@ function ComparisonModeRows({ pairs }: { pairs: string[] }) {
           </TableRow>
           {DexesPairsMapping[dex] && Object.entries(DexesPairsMapping[dex]).length > 0 ? (
             Object.entries(DexesPairsMapping[dex]).map(([asset]) => {
-              if (pairs.includes(asset)) {
+              if (assets.includes(asset)) {
                 return (
                   <TableRow key={asset}>
                     <TableCell className="h-10">{asset}</TableCell>
@@ -38,10 +39,29 @@ function ComparisonModeRows({ pairs }: { pairs: string[] }) {
   );
 }
 
-function FundingModeRows({ pairs }: { pairs: string[] }) {
+function FundingModeRows({ assets }: { assets: string[] }) {
+  useEffect(() => {
+    if (!assets.length) return;
+
+    const fetchFunding = () => {
+      fetch('/api/funding/hyperliquid/funding'
+        + '?' + HTTPParams.assets + '=' + assets.join(','))
+        .then(res => res.json())
+        .then(data => { console.log(data) })
+        .catch(err => console.error(err));
+    }
+
+    fetchFunding(); // immediate call
+    const interval = setInterval(() => {
+      fetchFunding();
+    }, 30000); // fetch every 30 seconds
+
+    return () => clearInterval(interval); // cleanup 
+  }, [assets]);
+
   return (
     <>
-      {pairs.map((pair) => (
+      {assets.map((pair) => (
         <TableRow key={pair}>
           <TableCell className="h-10">{pair}</TableCell>
         </TableRow>
@@ -52,7 +72,7 @@ function FundingModeRows({ pairs }: { pairs: string[] }) {
 
 export default function TableFundings() {
   const { selected, comparisonMode } = useContext(FundingContext);
-  const [pairs, setPairs] = useState<string[]>([]); // selected pairs
+  const [assets, setAssets] = useState<string[]>([]); // selected pairs
 
   return (
     <Table>
@@ -66,8 +86,8 @@ export default function TableFundings() {
             <>
               <TableHead className="w-25 bg-secondary">
                 <AssetSelector
-                  selected={pairs}
-                  setSelected={setPairs}
+                  selected={assets}
+                  setSelected={setAssets}
                   defaultSelected={true}
                   disabled={selected.length === 0}
                 />
@@ -82,9 +102,9 @@ export default function TableFundings() {
 
       <TableBody>
         {comparisonMode ? (
-          <ComparisonModeRows pairs={pairs} />
+          <ComparisonModeRows assets={assets} />
         ) :
-          <FundingModeRows pairs={pairs} />
+          <FundingModeRows assets={assets} />
         }
       </TableBody>
     </Table >
