@@ -5,20 +5,27 @@ export const Assets = {
   HYPE: "HYPE"
 } as const
 
+export type AssetValues = typeof Assets[keyof typeof Assets]
+
 export const Collats = {
   USDC: "USDC",
   USDe: "USDe"
 } as const
 
+export type CollatValues = typeof Collats[keyof typeof Collats]
+
 export type Pair = {
-  asset: keyof typeof Assets
-  collateral: keyof typeof Collats
+  asset: AssetValues
+  collateral: CollatValues
 }
 
 export type PairRecord = Record<string, Pair>
 export type PairWithArbies = Record<string, Pair>
 
-export function formatSlashPair(asset: keyof typeof Assets, collateral: keyof typeof Collats): string {
+export function formatSlashPair(
+  asset: AssetValues,
+  collateral: CollatValues
+): string {
   return `${asset}/${collateral}`;
 }
 

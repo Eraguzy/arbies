@@ -1,6 +1,5 @@
 import { LighterPairRegistry } from "./lighter"
 import { HLPairRegistry } from "./hyperliquid"
-import { ArbiesPairRegistry } from "@/lib/funding/assets"
 
 export const AllDexes = {
   Hyperliquid: "Hyperliquid",
