@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
 import { Assets } from "@/lib/funding/assets";
+import { ChevronDown } from 'lucide-react';
 
 export default function AssetSelector(
   { selected,
@@ -46,7 +47,10 @@ export default function AssetSelector(
       }}
     >
       <PopoverTrigger>
-        <Button className="cursor-pointer" disabled={disabled}>Select assets</Button>
+        <Button className="cursor-pointer bg-secondary text-foreground hover:bg-ring" disabled={disabled}>
+          Select assets
+          <ChevronDown className="h-4 w-4" />
+        </Button>
       </PopoverTrigger>
 
       <PopoverContent
