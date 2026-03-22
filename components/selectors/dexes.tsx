@@ -6,7 +6,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
-import { AllDexes } from "@/lib/funding/dexes/arbies";
+import { AllDexes, DexValues } from "@/lib/funding/dexes/arbies";
 
 export default function DexesSelector(
 	{ selected,
@@ -15,15 +15,15 @@ export default function DexesSelector(
 		defaultSelected,
 		disabled = false,
 	}: {
-		selected: string[];
-		setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+		selected: DexValues[];
+		setSelected: React.Dispatch<React.SetStateAction<DexValues[]>>;
 		multiple?: boolean;
 		defaultSelected: boolean;
 		disabled?: boolean;
 	}) {
 
 	const [open, setOpen] = React.useState(false);
-	const toggle = (opt: string) => {
+	const toggle = (opt: DexValues) => {
 		if (disabled) return;
 
 		if (selected.includes(opt)) {
