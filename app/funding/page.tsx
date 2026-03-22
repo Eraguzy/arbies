@@ -3,10 +3,11 @@
 import React from "react";
 import DexesSelector from "@/components/selectors/dexes";
 import TableFundings from "./components/table-fundings";
+import { DexValues } from "@/lib/funding/dexes/arbies";
 
 export const FundingContext = React.createContext({
-	selected: [] as string[], // horizontal axis
-	compared: [] as string[], // vertical axis
+	selected: [] as DexValues[], // horizontal axis
+	compared: [] as DexValues[], // vertical axis
 	comparisonMode: false, // choose between funding mode and comparison mode
 });
 
@@ -14,8 +15,8 @@ export const FundingContext = React.createContext({
 // if in funding mode (no comparison selected), show the funding for each pair and dex
 // if in comparison mode (comparison selected), show the difference in funding between the selected dexes for each pair
 export default function Funding() {
-	const [selected, setSelected] = React.useState<string[]>([]); // horizontal axis
-	const [compared, setCompared] = React.useState<string[]>([]); // vertical axis
+	const [selected, setSelected] = React.useState<DexValues[]>([]); // horizontal axis
+	const [compared, setCompared] = React.useState<DexValues[]>([]); // vertical axis
 	const [comparisonMode, setComparisonMode] = React.useState<boolean>(false); // choose between funding mode and comparison mode
 
 	React.useEffect(() => {

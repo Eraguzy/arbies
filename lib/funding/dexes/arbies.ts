@@ -14,7 +14,9 @@ export const AllDexes = {
   "01": "01",
 }
 
-export const DexesPairsMapping: { [key: string]: { [key: string]: AssetValues } } = {
+export type DexValues = typeof AllDexes[keyof typeof AllDexes]
+
+export const DexesPairsMapping: Record<DexValues, Record<string, AssetValues>> = {
   [AllDexes.Hyperliquid]: HLPairRegistry,
   [AllDexes.Lighter]: LighterPairRegistry,
 }
