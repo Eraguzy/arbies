@@ -4,7 +4,7 @@ import AssetSelector from "@/components/selectors/assets";
 import { FundingContext } from "../page";
 import { HTTPParams } from "@/app/api/req-params";
 import { AllDexes, DexesPairsMapping, DexValues } from "@/lib/funding/dexes/arbies";
-import { AssetAndFdg } from "@/app/api/funding/hyperliquid/funding/route";
+import { AssetAndFdg } from "@/app/api/funding/utils";
 import { HLPairRegistry } from "@/lib/funding/dexes/hyperliquid";
 import { AssetValues } from "@/lib/funding/assets";
 
@@ -46,26 +46,24 @@ function FundingModeRows({ assets }: { assets: AssetValues[] }) {
   const fundingsPerDex = useContext(FundingsCtx);
   const { selected } = useContext(FundingContext);
 
-  return (
-    <>
-      {assets.map((pair: AssetValues) => (
-        <TableRow key={pair}>
-          <TableCell className="h-10">{pair}</TableCell>
-          {
-            selected.map((dex) => (
-              <TableCell key={dex} className="h-10">
-                {
-                  fundingsPerDex[dex]?.find(f => f.name === HLPairRegistry[pair])?.funding !== undefined
-                    ? fundingsPerDex[dex].find(f => f.name === HLPairRegistry[pair])?.funding.toFixed(2) + ' %'
-                    : 'N/A'
-                }
-              </TableCell>
-            ))
-          }
-        </TableRow>
-      ))}
-    </>
-  );
+  return (<>
+    {assets.map((pair: AssetValues) => (
+      <TableRow key={pair}>
+        <TableCell className="h-10">{pair}</TableCell>
+        {
+          selected.map((dex) => (
+            <TableCell key={dex} className="h-10">
+              {
+                fundingsPerDex[dex]?.find(f => f.name === HLPairRegistry[pair])?.funding !== undefined
+                  ? fundingsPerDex[dex].find(f => f.name === HLPairRegistry[pair])?.funding.toFixed(2) + ' %'
+                  : 'N/A'
+              }
+            </TableCell>
+          ))
+        }
+      </TableRow>
+    ))}
+  </>);
 }
 
 export const FundingsCtx = createContext({} as Record<DexValues, AssetAndFdg[]>);
@@ -84,7 +82,17 @@ export default function TableFundings() {
         + '?' + HTTPParams.assets + '=' + assets.join(','))
         .then(res => res.json())
         .then(data => {
-          setFundingsPerDex({ [AllDexes.Hyperliquid]: data || [] });
+          if (data.error) return console.error('err while fetching HL funding data:', data.error);
+          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Hyperliquid]: data || [] }));
+        })
+        .catch(err => console.error(err));
+
+      fetch('/api/funding/lighter/funding'
+        + '?' + HTTPParams.assets + '=' + assets.join(','))
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) return console.error('err while fetching Lighter funding data:', data.error);
+          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Lighter]: data || [] }));
         })
         .catch(err => console.error(err));
     }

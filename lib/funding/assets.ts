@@ -2,7 +2,10 @@ export const ArbiesAssets = {
   BTC: "BTC",
   ETH: "ETH",
   SOL: "SOL",
-  HYPE: "HYPE"
+  HYPE: "HYPE",
+  GOOGL: "GOOGL",
+  AAPL: "AAPL",
+  GBPUSD: "GBPUSD",
 } as const
 
 export type AssetValues = typeof ArbiesAssets[keyof typeof ArbiesAssets]
