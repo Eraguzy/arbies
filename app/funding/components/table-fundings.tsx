@@ -1,11 +1,14 @@
 import { useContext, useEffect, useState } from "react";
-import { DexesPairsMapping } from "@/lib/funding/dexes/arbies";
 import { Table, TableCaption, TableHeader, TableRow, TableCell, TableHead, TableBody } from "@/components/ui/table";
 import AssetSelector from "@/components/selectors/assets";
 import { FundingContext } from "../page";
 import { HTTPParams } from "@/app/api/req-params";
+import { DexesPairsMapping } from "@/lib/funding/dexes/arbies";
+import { AssetAndFdg } from "@/app/api/funding/hyperliquid/funding/route";
+import { HLPairRegistry } from "@/lib/funding/dexes/hyperliquid";
+import { AssetValues } from "@/lib/funding/assets";
 
-function ComparisonModeRows({ assets }: { assets: string[] }) {
+function ComparisonModeRows({ assets }: { assets: AssetValues[] }) {
   const { selected, compared } = useContext(FundingContext);
 
   return (
@@ -22,7 +25,7 @@ function ComparisonModeRows({ assets }: { assets: string[] }) {
             }
           </TableRow>
           {DexesPairsMapping[dex] && Object.entries(DexesPairsMapping[dex]).length > 0 ? (
-            Object.entries(DexesPairsMapping[dex]).map(([asset]) => {
+            Object.values(DexesPairsMapping[dex]).map((asset) => {
               if (assets.includes(asset)) {
                 return (
                   <TableRow key={asset}>
@@ -39,21 +42,25 @@ function ComparisonModeRows({ assets }: { assets: string[] }) {
   );
 }
 
-function FundingModeRows({ assets }: { assets: string[] }) {
+function FundingModeRows({ assets }: { assets: AssetValues[] }) {
+  const [hlFundings, setHlFundings] = useState<AssetAndFdg[]>([]); // selected pairs
+
   useEffect(() => {
     if (!assets.length) return;
 
-    const fetchFunding = () => {
+    const fetchFundings = () => {
       fetch('/api/funding/hyperliquid/funding'
         + '?' + HTTPParams.assets + '=' + assets.join(','))
         .then(res => res.json())
-        .then(data => { console.log(data) })
+        .then(data => {
+          setHlFundings(data);
+        })
         .catch(err => console.error(err));
     }
 
-    fetchFunding(); // immediate call
+    fetchFundings(); // immediate call
     const interval = setInterval(() => {
-      fetchFunding();
+      fetchFundings();
     }, 30000); // fetch every 30 seconds
 
     return () => clearInterval(interval); // cleanup 
@@ -61,9 +68,14 @@ function FundingModeRows({ assets }: { assets: string[] }) {
 
   return (
     <>
-      {assets.map((pair) => (
+      {assets.map((pair: AssetValues) => (
         <TableRow key={pair}>
           <TableCell className="h-10">{pair}</TableCell>
+          <TableCell className="h-10">{
+            hlFundings.find(f => f.name === HLPairRegistry[pair])?.funding !== undefined
+              ? hlFundings.find(f => f.name === HLPairRegistry[pair])?.funding.toFixed(2) + ' %'
+              : 'N/A'
+          }</TableCell>
         </TableRow>
       ))}
     </>
@@ -72,7 +84,7 @@ function FundingModeRows({ assets }: { assets: string[] }) {
 
 export default function TableFundings() {
   const { selected, comparisonMode } = useContext(FundingContext);
-  const [assets, setAssets] = useState<string[]>([]); // selected pairs
+  const [assets, setAssets] = useState<AssetValues[]>([]); // selected pairs
 
   return (
     <Table>

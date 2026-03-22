@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
-import { Assets } from "@/lib/funding/assets";
+import { ArbiesAssets, AssetValues } from "@/lib/funding/assets";
 import { ChevronDown } from 'lucide-react';
 
 export default function AssetSelector(
@@ -15,14 +15,14 @@ export default function AssetSelector(
     defaultSelected,
     disabled = false,
   }: {
-    selected: string[];
-    setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+    selected: AssetValues[];
+    setSelected: React.Dispatch<React.SetStateAction<AssetValues[]>>;
     defaultSelected: boolean;
     disabled?: boolean;
   }) {
 
   const [open, setOpen] = React.useState(false);
-  const toggle = (opt: string) => {
+  const toggle = (opt: AssetValues) => {
     if (disabled) return;
 
     if (selected.includes(opt)) {
@@ -35,7 +35,7 @@ export default function AssetSelector(
 
   React.useEffect(() => {
     if (defaultSelected) {
-      setSelected(Object.values(Assets));
+      setSelected(Object.values(ArbiesAssets));
     }
   }, []);
 
@@ -60,7 +60,7 @@ export default function AssetSelector(
         sideOffset={4}
         sticky="partial"
       >
-        {Object.values(Assets).map((opt) => (
+        {Object.values(ArbiesAssets).map((opt) => (
           <div
             key={opt}
             className="flex w-full min-h-10 items-center gap-3 rounded-md px-3 transition-colors hover:bg-accent/60 cursor-pointer select-none"

@@ -1,5 +1,6 @@
 import { LighterPairRegistry } from "./lighter"
 import { HLPairRegistry } from "./hyperliquid"
+import { AssetValues } from "../assets"
 
 export const AllDexes = {
   Hyperliquid: "Hyperliquid",
@@ -13,7 +14,7 @@ export const AllDexes = {
   "01": "01",
 }
 
-export const DexesPairsMapping = {
+export const DexesPairsMapping: { [key: string]: { [key: string]: AssetValues } } = {
   [AllDexes.Hyperliquid]: HLPairRegistry,
   [AllDexes.Lighter]: LighterPairRegistry,
 }
