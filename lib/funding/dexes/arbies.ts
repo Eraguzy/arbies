@@ -1,5 +1,6 @@
 import { LighterPairRegistry } from "./lighter"
 import { HLPairRegistry } from "./hyperliquid"
+import { QFEXPairRegistry } from "./qfex"
 import { AssetValues } from "../assets"
 
 export const AllDexes = {
@@ -19,4 +20,5 @@ export type DexValues = typeof AllDexes[keyof typeof AllDexes]
 export const DexesPairsMapping: Record<DexValues, Record<string, AssetValues>> = {
   [AllDexes.Hyperliquid]: HLPairRegistry,
   [AllDexes.Lighter]: LighterPairRegistry,
+  [AllDexes.QFEX]: QFEXPairRegistry,
 }
