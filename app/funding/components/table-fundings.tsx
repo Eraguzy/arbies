@@ -1,9 +1,9 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, createContext } from "react";
 import { Table, TableCaption, TableHeader, TableRow, TableCell, TableHead, TableBody } from "@/components/ui/table";
 import AssetSelector from "@/components/selectors/assets";
 import { FundingContext } from "../page";
 import { HTTPParams } from "@/app/api/req-params";
-import { DexesPairsMapping } from "@/lib/funding/dexes/arbies";
+import { AllDexes, DexesPairsMapping, DexValues } from "@/lib/funding/dexes/arbies";
 import { AssetAndFdg } from "@/app/api/funding/hyperliquid/funding/route";
 import { HLPairRegistry } from "@/lib/funding/dexes/hyperliquid";
 import { AssetValues } from "@/lib/funding/assets";
@@ -43,7 +43,38 @@ function ComparisonModeRows({ assets }: { assets: AssetValues[] }) {
 }
 
 function FundingModeRows({ assets }: { assets: AssetValues[] }) {
-  const [hlFundings, setHlFundings] = useState<AssetAndFdg[]>([]); // selected pairs
+  const fundingsPerDex = useContext(FundingsCtx);
+  const { selected } = useContext(FundingContext);
+
+  return (
+    <>
+      {assets.map((pair: AssetValues) => (
+        <TableRow key={pair}>
+          <TableCell className="h-10">{pair}</TableCell>
+          {
+            selected.map((dex) => (
+              <TableCell key={dex} className="h-10">
+                {
+                  fundingsPerDex[dex]?.find(f => f.name === HLPairRegistry[pair])?.funding !== undefined
+                    ? fundingsPerDex[dex].find(f => f.name === HLPairRegistry[pair])?.funding.toFixed(2) + ' %'
+                    : 'N/A'
+                }
+              </TableCell>
+            ))
+          }
+        </TableRow>
+      ))}
+    </>
+  );
+}
+
+export const FundingsCtx = createContext({} as Record<DexValues, AssetAndFdg[]>);
+
+export default function TableFundings() {
+  const { selected, comparisonMode } = useContext(FundingContext);
+  const [assets, setAssets] = useState<AssetValues[]>([]); // selected pairs
+  // map dexes to their fundings for the selected pairs
+  const [fundingsPerDex, setFundingsPerDex] = useState<Record<DexValues, AssetAndFdg[]>>({});
 
   useEffect(() => {
     if (!assets.length) return;
@@ -53,7 +84,7 @@ function FundingModeRows({ assets }: { assets: AssetValues[] }) {
         + '?' + HTTPParams.assets + '=' + assets.join(','))
         .then(res => res.json())
         .then(data => {
-          setHlFundings(data);
+          setFundingsPerDex({ [AllDexes.Hyperliquid]: data || [] });
         })
         .catch(err => console.error(err));
     }
@@ -65,26 +96,6 @@ function FundingModeRows({ assets }: { assets: AssetValues[] }) {
 
     return () => clearInterval(interval); // cleanup 
   }, [assets]);
-
-  return (
-    <>
-      {assets.map((pair: AssetValues) => (
-        <TableRow key={pair}>
-          <TableCell className="h-10">{pair}</TableCell>
-          <TableCell className="h-10">{
-            hlFundings.find(f => f.name === HLPairRegistry[pair])?.funding !== undefined
-              ? hlFundings.find(f => f.name === HLPairRegistry[pair])?.funding.toFixed(2) + ' %'
-              : 'N/A'
-          }</TableCell>
-        </TableRow>
-      ))}
-    </>
-  );
-}
-
-export default function TableFundings() {
-  const { selected, comparisonMode } = useContext(FundingContext);
-  const [assets, setAssets] = useState<AssetValues[]>([]); // selected pairs
 
   return (
     <Table>
@@ -112,13 +123,15 @@ export default function TableFundings() {
         </TableRow>
       </TableHeader>
 
-      <TableBody>
-        {comparisonMode ? (
-          <ComparisonModeRows assets={assets} />
-        ) :
-          <FundingModeRows assets={assets} />
-        }
-      </TableBody>
-    </Table >
+      <FundingsCtx value={fundingsPerDex}>
+        <TableBody>
+          {comparisonMode ? (
+            <ComparisonModeRows assets={assets} />
+          ) :
+            <FundingModeRows assets={assets} />
+          }
+        </TableBody>
+      </FundingsCtx>
+    </Table>
   )
 }
