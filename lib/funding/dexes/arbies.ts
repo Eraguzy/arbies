@@ -7,6 +7,7 @@ import { VariPairRegistry } from "./variational"
 import { EtherealPairRegistry } from "./ethereal"
 import { PacificaPairRegistry } from "./pacifica"
 import { ParadexPairRegistry } from "./paradex"
+import { ZoPairRegistry } from "./01"
 
 export const AllDexes = {
   Hyperliquid: "Hyperliquid",
@@ -31,4 +32,5 @@ export const DexesPairsMapping: Record<DexValues, Record<string, AssetValues>> =
   [AllDexes.Pacifica]: PacificaPairRegistry,
   [AllDexes.Ethereal]: EtherealPairRegistry,
   // [AllDexes.Paradex]: ParadexPairRegistry,
+  [AllDexes["01"]]: ZoPairRegistry,
 }
