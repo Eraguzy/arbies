@@ -5,5 +5,8 @@ export const LighterPairRegistry: Record<string, AssetValues> = {
   "BTC": ArbiesAssets.BTC,
   "ETH": ArbiesAssets.ETH,
   "SOL": ArbiesAssets.SOL,
-  "HYPE": ArbiesAssets.HYPE
+  "HYPE": ArbiesAssets.HYPE,
+  "GOOGL": ArbiesAssets.GOOGL,
+  "AAPL": ArbiesAssets.AAPL,
+  "GBPUSD": ArbiesAssets.GBPUSD,
 }

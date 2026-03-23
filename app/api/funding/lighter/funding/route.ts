@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
     )
     .map(
       (universe: any) => {
-        console.log('Processing universe:', universe.symbol, universe.rate);
         return {
           name: LighterPairRegistry[universe.symbol],
           funding: annualize8HourlyFunding(universe.rate),

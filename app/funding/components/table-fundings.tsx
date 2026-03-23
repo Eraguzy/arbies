@@ -51,15 +51,21 @@ function FundingModeRows({ assets }: { assets: AssetValues[] }) {
       <TableRow key={pair}>
         <TableCell className="h-10">{pair}</TableCell>
         {
-          selected.map((dex) => (
-            <TableCell key={dex} className="h-10">
-              {
-                fundingsPerDex[dex]?.find(f => f.name === HLPairRegistry[pair])?.funding !== undefined
-                  ? fundingsPerDex[dex].find(f => f.name === HLPairRegistry[pair])?.funding.toFixed(2) + ' %'
-                  : 'N/A'
-              }
-            </TableCell>
-          ))
+          selected.map((dex) => {
+            const foundFunding = fundingsPerDex[dex]?.find(
+              f => f.name === pair // at this point api should already have formatted f.name to arbies notation
+            )?.funding;
+
+            return (
+              <TableCell key={dex} className="h-10">
+                {
+                  foundFunding !== undefined
+                    ? foundFunding.toFixed(2) + ' %'
+                    : 'N/A'
+                }
+              </TableCell>
+            )
+          })
         }
       </TableRow>
     ))}
@@ -93,6 +99,15 @@ export default function TableFundings() {
         .then(data => {
           if (data.error) return console.error('err while fetching Lighter funding data:', data.error);
           setFundingsPerDex(prev => ({ ...prev, [AllDexes.Lighter]: data || [] }));
+        })
+        .catch(err => console.error(err));
+
+      fetch('/api/funding/extended/funding'
+        + '?' + HTTPParams.assets + '=' + assets.join(','))
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) return console.error('err while fetching Extended funding data:', data.error);
+          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Extended]: data || [] }));
         })
         .catch(err => console.error(err));
     }
