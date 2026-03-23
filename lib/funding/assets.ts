@@ -1,11 +1,9 @@
 export const ArbiesAssets = {
+  //crypto
   BTC: "BTC",
   ETH: "ETH",
   SOL: "SOL",
   HYPE: "HYPE",
-  GOOGL: "GOOGL",
-  AAPL: "AAPL",
-  GBPUSD: "GBPUSD",
   SUI: "SUI",
   XRP: "XRP",
   AAVE: "AAVE",
@@ -17,7 +15,27 @@ export const ArbiesAssets = {
   XMR: "XMR",
   LIT: "LIT",
   BERA: "BERA",
+  WLFI: "WLFI",
+  IP: "IP",
+  XPL: "XPL",
+  S: "S",
+  JUP: "JUP",
+  EIGEN: "EIGEN",
+  APT: "APT",
+  KAITO: "KAITO",
+  VIRTUAL: "VIRTUAL",
+  NEAR: "NEAR",
+  ARB: "ARB",
+  ASTER: "ASTER",
+  PAXG: "PAXG",
+  //stocks
+  GOOGL: "GOOGL",
+  AAPL: "AAPL",
+  //forex
+  GBPUSD: "GBPUSD",
+  //commodities
 } as const
+
 
 export type AssetValues = typeof ArbiesAssets[keyof typeof ArbiesAssets]
 
