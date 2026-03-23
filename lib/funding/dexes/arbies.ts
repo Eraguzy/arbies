@@ -4,6 +4,9 @@ import { QFEXPairRegistry } from "./qfex"
 import { AssetValues } from "../assets"
 import { ExtndPairRegistry } from "./extended"
 import { VariPairRegistry } from "./variational"
+import { EtherealPairRegistry } from "./ethereal"
+import { PacificaPairRegistry } from "./pacifica"
+import { ParadexPairRegistry } from "./paradex"
 
 export const AllDexes = {
   Hyperliquid: "Hyperliquid",
@@ -13,7 +16,7 @@ export const AllDexes = {
   Variational: "Variational",
   Pacifica: "Pacifica",
   Ethereal: "Ethereal",
-  Paradex: "Paradex",
+  // Paradex: "Paradex",
   "01": "01",
 }
 
@@ -25,4 +28,7 @@ export const DexesPairsMapping: Record<DexValues, Record<string, AssetValues>> =
   [AllDexes.QFEX]: QFEXPairRegistry,
   [AllDexes.Extended]: ExtndPairRegistry,
   [AllDexes.Variational]: VariPairRegistry,
+  [AllDexes.Pacifica]: PacificaPairRegistry,
+  [AllDexes.Ethereal]: EtherealPairRegistry,
+  // [AllDexes.Paradex]: ParadexPairRegistry,
 }
