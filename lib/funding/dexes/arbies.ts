@@ -3,6 +3,7 @@ import { HLPairRegistry } from "./hyperliquid"
 import { QFEXPairRegistry } from "./qfex"
 import { AssetValues } from "../assets"
 import { ExtndPairRegistry } from "./extended"
+import { VariPairRegistry } from "./variational"
 
 export const AllDexes = {
   Hyperliquid: "Hyperliquid",
@@ -23,4 +24,5 @@ export const DexesPairsMapping: Record<DexValues, Record<string, AssetValues>> =
   [AllDexes.Lighter]: LighterPairRegistry,
   [AllDexes.QFEX]: QFEXPairRegistry,
   [AllDexes.Extended]: ExtndPairRegistry,
+  [AllDexes.Variational]: VariPairRegistry,
 }

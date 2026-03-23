@@ -110,6 +110,24 @@ export default function TableFundings() {
           setFundingsPerDex(prev => ({ ...prev, [AllDexes.Extended]: data || [] }));
         })
         .catch(err => console.error(err));
+
+      fetch('/api/funding/variational/funding'
+        + '?' + HTTPParams.assets + '=' + assets.join(','))
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) return console.error('err while fetching Variational funding data:', data.error);
+          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Variational]: data || [] }));
+        })
+        .catch(err => console.error(err));
+
+      fetch('/api/funding/pacifica/funding'
+        + '?' + HTTPParams.assets + '=' + assets.join(','))
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) return console.error('err while fetching Pacifica funding data:', data.error);
+          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Pacifica]: data || [] }));
+        })
+        .catch(err => console.error(err));
     }
 
     fetchFundings(); // immediate call
