@@ -8,7 +8,7 @@ import { AssetValues } from '@/lib/funding/assets';
 
 // get ethereal ids based on the local pairs
 // return format: [{ id: '312bfacfb767', ticker: 'BTCUSD' }, ...]
-async function getIdsAndTickers(assets: AssetValues[]): Promise<Record<string, keyof typeof EtherealPairRegistry>> {
+async function getIdsAndTickers(assets: AssetValues[]): Promise<Map<string, keyof typeof EtherealPairRegistry>> {
   const res = await fetch(
     EtherealApiUrl + EtherealApiUrlEndpoints.product,
     {
@@ -18,13 +18,13 @@ async function getIdsAndTickers(assets: AssetValues[]): Promise<Record<string, k
   );
   const data = await res.json();
   if (!data || !data.data || data.data.length === 0) {
-    return {};
+    return new Map();
   }
 
-  const ids: Record<string, keyof typeof EtherealPairRegistry> = {};
+  const ids: Map<string, keyof typeof EtherealPairRegistry> = new Map();
   for (const listing of data.data) {
     if (assets.includes(EtherealPairRegistry[listing.ticker])) {
-      ids[listing.id] = listing.ticker;
+      ids.set(listing.id, listing.ticker);
     }
   }
   return ids;
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 
   const res = await fetch(
     EtherealApiUrl + EtherealApiUrlEndpoints.projectedFunding
-    + '?productIds=' + Object.keys(idsAndTickers).join('&productIds='),
+    + '?productIds=' + Array.from(idsAndTickers.keys()).join('&productIds='),
     {
       method: 'GET',
       headers: { accept: 'application/json' },
@@ -54,10 +54,12 @@ export async function GET(request: NextRequest) {
 
   // associate all assets with their funding
   const assetsAndFundings: AssetAndFdg[] = data.data
-    .filter((listing: any) => pairs.includes(EtherealPairRegistry[idsAndTickers[listing.productId]]))
+    .filter((listing: any) => pairs.includes(EtherealPairRegistry[idsAndTickers.get(listing.productId)!]))
     .map((universe: any) => {
+      if (!idsAndTickers.has(universe.productId))
+        return null;
       return {
-        name: EtherealPairRegistry[idsAndTickers[universe.productId]], // get the local ticker name from id
+        name: EtherealPairRegistry[idsAndTickers.get(universe.productId)!], // get the local ticker name from id
         funding: annualizeHourlyFunding(universe.fundingRateProjected1h), // it's already annualized as a rate in api
       };
     });
