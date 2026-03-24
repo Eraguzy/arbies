@@ -17,7 +17,7 @@ export const AllDexes = {
   Variational: "Variational",
   Pacifica: "Pacifica",
   Ethereal: "Ethereal",
-  // Paradex: "Paradex",
+  Paradex: "Paradex",
   "01": "01",
 }
 
@@ -31,6 +31,6 @@ export const DexesPairsMapping: Record<DexValues, Record<string, AssetValues>> =
   [AllDexes.Variational]: VariPairRegistry,
   [AllDexes.Pacifica]: PacificaPairRegistry,
   [AllDexes.Ethereal]: EtherealPairRegistry,
-  // [AllDexes.Paradex]: ParadexPairRegistry,
+  [AllDexes.Paradex]: ParadexPairRegistry,
   [AllDexes["01"]]: ZoPairRegistry,
 }
