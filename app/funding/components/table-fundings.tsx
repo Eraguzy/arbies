@@ -146,6 +146,15 @@ export default function TableFundings() {
           setFundingsPerDex(prev => ({ ...prev, [AllDexes['01']]: data || [] }));
         })
         .catch(err => console.error(err));
+
+      fetch('/api/funding/paradex/funding'
+        + '?' + HTTPParams.assets + '=' + assets.join(','))
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) return console.error('err while fetching Paradex funding data:', data.error);
+          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Paradex]: data || [] }));
+        })
+        .catch(err => console.error(err));
     }
 
     fetchFundings(); // immediate call
