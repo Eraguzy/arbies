@@ -1,8 +1,7 @@
 -add all pairs
--change ethereal with maps
 -loading state
 -compare module
 -add todo steps for new dex
--parallelize 01 reqs
+-parallelize 01/paradex reqs
 -avoid order change when selecting
 -keep select in browser memory
