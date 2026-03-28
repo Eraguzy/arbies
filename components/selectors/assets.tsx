@@ -1,19 +1,20 @@
 import * as React from "react"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Button } from "@/components/ui/button";
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  useComboboxAnchor,
+} from "@/components/ui/combobox"
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets";
-import { ChevronDown } from 'lucide-react';
 
 export default function AssetSelector(
   { selected,
     setSelected,
     defaultSelected,
-    disabled = false,
+    disabled
   }: {
     selected: AssetValues[];
     setSelected: React.Dispatch<React.SetStateAction<AssetValues[]>>;
@@ -21,59 +22,33 @@ export default function AssetSelector(
     disabled?: boolean;
   }) {
 
-  const [open, setOpen] = React.useState(false);
-  const toggle = (opt: AssetValues) => {
-    if (disabled) return;
-
-    if (selected.includes(opt)) {
-      setSelected(selected.filter(s => s !== opt));
-    }
-    else {
-      setSelected([...selected, opt]);
-    }
-  }
-
   React.useEffect(() => {
     if (defaultSelected) {
       setSelected(Object.values(ArbiesAssets));
     }
   }, []);
 
-  return (
-    <Popover
-      open={open}
-      onOpenChange={(nextOpen) => {
-        disabled ? setOpen(false) : setOpen(nextOpen);
-      }}
-    >
-      <PopoverTrigger>
-        <Button className="cursor-pointer bg-secondary text-foreground hover:bg-ring" disabled={disabled}>
-          Select assets
-          <ChevronDown className="h-4 w-4" />
-        </Button>
-      </PopoverTrigger>
+  const anchor = useComboboxAnchor();
 
-      <PopoverContent
-        className="w-30 p-1 gap-1"
-        side="bottom"
-        align="start"
-        sideOffset={4}
-        sticky="partial"
-      >
-        {Object.values(ArbiesAssets).map((opt) => (
-          <div
-            key={opt}
-            className="flex w-full min-h-10 items-center gap-3 rounded-md px-3 transition-colors hover:bg-accent/60 cursor-pointer select-none"
-            onClick={() => toggle(opt)}
-          >
-            <Checkbox
-              checked={selected.includes(opt)}
-              className="pointer-events-none bg-background"
-            />
-            {opt}
-          </div>
-        ))}
-      </PopoverContent>
-    </Popover>
+  return (
+    <Combobox
+      items={Object.values(ArbiesAssets)}
+      multiple
+      value={selected}
+      onValueChange={setSelected}
+      disabled={disabled}
+    >
+      <ComboboxInput placeholder="Select assets" className="w-35" />
+      <ComboboxContent anchor={anchor} className="w-35">
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item) => (
+            <ComboboxItem key={item} value={item}>
+              {item}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }
