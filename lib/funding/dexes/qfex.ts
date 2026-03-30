@@ -1,8 +1,35 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
 
-// match QFEX pairs with the local registry ; they are mapped by ids on the api
+// match QFEX pairs with the local registry
 export const QFEXPairRegistry: Record<string, AssetValues> = {
-  "GOOGL": ArbiesAssets.GOOGL,
-  "AAPL": ArbiesAssets.AAPL,
-  "GBP/USD": ArbiesAssets.GBPUSD,
+  "AAPL-USD": ArbiesAssets.AAPL,
+  "BA-USD": ArbiesAssets.BA,
+  "CL-USD": ArbiesAssets.WTI,
+  "COPPER-USD": ArbiesAssets.XCU,
+  "CRCL-USD": ArbiesAssets.CRCL,
+  "CRWV-USD": ArbiesAssets.CRWV,
+  "EUR-USD": ArbiesAssets.EURUSD,
+  "GD-USD": ArbiesAssets.GD,
+  "GBP-USD": ArbiesAssets.GBPUSD,
+  "GOLD-USD": ArbiesAssets.XAU,
+  "GOOGL-USD": ArbiesAssets.GOOGL,
+  "HOOD-USD": ArbiesAssets.HOOD,
+  "INTC-USD": ArbiesAssets.INTC,
+  // "KOSPI-USD": ArbiesAssets.KRCOMP,
+  "LMT-USD": ArbiesAssets.LMT,
+  "META-USD": ArbiesAssets.META,
+  "MSFT-USD": ArbiesAssets.MSFT,
+  "NATGAS-USD": ArbiesAssets.NATGAS,
+  "NOC-USD": ArbiesAssets.NOC,
+  "NVDA-USD": ArbiesAssets.NVDA,
+  "PLTR-USD": ArbiesAssets.PLTR,
+  "RKLB-USD": ArbiesAssets.RKLB,
+  "RTX-USD": ArbiesAssets.RTX,
+  "SILVER-USD": ArbiesAssets.XAG,
+  "SNDK-USD": ArbiesAssets.SNDK,
+  "TSLA-USD": ArbiesAssets.TSLA,
+  "URANIUM-USD": ArbiesAssets.URA,
+  // "US100-USD": ArbiesAssets.US100,
+  // "US500-USD": ArbiesAssets.US500,
 }
+

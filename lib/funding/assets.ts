@@ -264,43 +264,49 @@ export const ArbiesAssets = {
   AMZN: "AMZN",
   ASML: "ASML",
   AVNT: "AVNT",
+  BA: "BA",
   BMNR: "BMNR",
   BOTZ: "BOTZ",
   COIN: "COIN",
   CRCL: "CRCL",
+  CRWV: "CRWV",
   DIA: "DIA",
+  GD: "GD",
   GOOGL: "GOOGL",
   HANMI: "HANMI",
   HOOD: "HOOD",
   HYUNDAI: "HYUNDAI",
   INTC: "INTC",
   IWM: "IWM",
-  KRCOMP: "KRCOMP",
+  LMT: "LMT",
   MAGS: "MAGS",
   META: "META",
   MSFT: "MSFT",
   MSTR: "MSTR",
   MU: "MU",
+  NOC: "NOC",
   NVDA: "NVDA",
   PLTR: "PLTR",
+  RKLB: "RKLB",
   ROBO: "ROBO",
+  RTX: "RTX",
   SAMSUNG: "SAMSUNG",
   SKHYNIX: "SKHYNIX",
   SNDK: "SNDK",
   SPY: "SPY",
   TSLA: "TSLA",
-  URA: "URA",
 
   // commodities
-  BRENTOIL: "BRENTOIL",
-  NATGAS: "NATGAS",
-  PAXG: "PAXG",
-  WTI: "WTI",
-  XAG: "XAG",
-  XAU: "XAU",
-  XCU: "XCU",
-  XPD: "XPD",
-  XPT: "XPT",
+  URA: "URA", // Uranium
+  BRENTOIL: "BRENTOIL", // Brent Oil
+  WTI: "WTI", // West Texas Intermediate Crude Oil
+  NATGAS: "NATGAS", // Natural Gas
+  PAXG: "PAXG", // Physical Gold
+  XAG: "XAG", // Silver
+  XAU: "XAU", // Gold
+  XCU: "XCU", // Copper
+  XPD: "XPD", // Palladium
+  XPT: "XPT", // Platinum
 } as const
 
 
