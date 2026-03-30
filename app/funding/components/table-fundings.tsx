@@ -102,6 +102,15 @@ export default function TableFundings() {
         })
         .catch(err => console.error(err));
 
+      fetch('/api/funding/qfex/funding'
+        + '?' + HTTPParams.assets + '=' + assets.join(','))
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) return console.error('err while fetching QFEX funding data:', data.error);
+          setFundingsPerDex(prev => ({ ...prev, [AllDexes.QFEX]: data || [] }));
+        })
+        .catch(err => console.error(err));
+
       fetch('/api/funding/extended/funding'
         + '?' + HTTPParams.assets + '=' + assets.join(','))
         .then(res => res.json())
