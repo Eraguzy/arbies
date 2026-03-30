@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { QfexApiUrl, QfexApiUrlEndpoints } from '../utils';
 import { HTTPParams } from '@/app/api/req-params';
 import { annualize8HourlyFunding, AssetAndFdg } from '../../utils';
-import { AllDexes } from '@/lib/funding/dexes/arbies';
-import { LighterPairRegistry } from '@/lib/funding/dexes/lighter';
+import { QFEXPairRegistry } from '@/lib/funding/dexes/qfex';
 
 // retrieve all coins ctx and keep the ones wanted
 export async function GET(request: NextRequest) {
@@ -18,24 +17,18 @@ export async function GET(request: NextRequest) {
     }
   );
   const data = await res.json();
-  if (!data) {
+  if (!data || !data.data) {
     return NextResponse.json({ error: 'No data found' }, { status: 404 });
   }
+  const fundingData: AssetAndFdg[] = [];
+  for (const pairData of data.data) {
+    if (QFEXPairRegistry[pairData.symbol]) {
+      fundingData.push({
+        name: QFEXPairRegistry[pairData.symbol],
+        funding: pairData.funding_rate_bps * 100 // bps to %,
+      });
+    }
+  }
 
-  // // associate all assets with their funding
-  // const assetsAndFundings: AssetAndFdg[] = data.funding_rates
-  //   .filter((universe: any) =>
-  //     universe.exchange.toLowerCase() === AllDexes.Lighter.toLowerCase() &&
-  //     pairs.includes(LighterPairRegistry[universe.symbol])
-  //   )
-  //   .map(
-  //     (universe: any) => {
-  //       return {
-  //         name: LighterPairRegistry[universe.symbol],
-  //         funding: annualize8HourlyFunding(universe.rate),
-  //       };
-  //     });
-  // // filter the assets to keep only the ones wanted
-  // return NextResponse.json(assetsAndFundings);
-  return NextResponse.json({ error: 'Funding data retrieval not implemented yet' }, { status: 501 });
+  return NextResponse.json(fundingData);
 }
