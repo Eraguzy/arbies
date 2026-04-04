@@ -58,6 +58,12 @@ export default function RootLayout({
 }>) {
   const router = useRouter();
   const [mode, setMode] = React.useState<string>("funding");
+  const [hydrated, setHydrated] = React.useState(false); // hide first fallback render
+
+  React.useEffect(() => {
+    setHydrated(true);
+  }, []);
+
 
   const modeOptions = {
     fundingValue: "funding",
@@ -68,7 +74,10 @@ export default function RootLayout({
 
   const handleModeChange = (value: string) => {
     setMode(value);
-    router.push(value === modeOptions.fundingValue ? "/" + modeOptions.fundingValue : "/" + modeOptions.lendingValue);
+    router.push(value === modeOptions.fundingValue ?
+      "/" + modeOptions.fundingValue :
+      "/" + modeOptions.lendingValue
+    );
   }
 
   return (
@@ -79,42 +88,45 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-background text-foreground">
         <ThemeProvider enableSystem>
-          {/* only on large screen*/}
-          <div className="hidden md:block">
-            <Menubar className="h-12 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="select-none text-xl text-primary">Arbies</div>
+          {hydrated ? // return null fallback if not hydrated yet, or it will show clumsy stuff on page load
+            (
+              <div className="hidden md:block">
+                <Menubar className="h-12 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="select-none text-xl text-primary">Arbies</div>
 
-                <MenubarMenu>
-                  <MenubarTrigger>Mode</MenubarTrigger>
-                  <MenubarContent>
-                    <MenubarRadioGroup value={mode} onValueChange={handleModeChange}>
-                      <MenubarRadioItem value={modeOptions.fundingValue}>{modeOptions.fundingText}</MenubarRadioItem>
-                      <MenubarRadioItem value={modeOptions.lendingValue}>{modeOptions.lendingText}</MenubarRadioItem>
-                    </MenubarRadioGroup>
-                  </MenubarContent>
-                </MenubarMenu>
+                    <MenubarMenu>
+                      <MenubarTrigger>Mode</MenubarTrigger>
+                      <MenubarContent>
+                        <MenubarRadioGroup value={mode} onValueChange={handleModeChange}>
+                          <MenubarRadioItem value={modeOptions.fundingValue}>{modeOptions.fundingText}</MenubarRadioItem>
+                          <MenubarRadioItem value={modeOptions.lendingValue}>{modeOptions.lendingText}</MenubarRadioItem>
+                        </MenubarRadioGroup>
+                      </MenubarContent>
+                    </MenubarMenu>
+                  </div>
+
+                  <div className="flex items-center">
+                    <Button
+                      onClick={() => window.open("https://github.com/eraguzy/arbies", "_blank")}
+                      className="rounded-full bg-background p-2 hover:bg-muted cursor-pointer"
+                    >
+                      <img src="/github.png" alt="Github" className="h-4 w-4 dark:invert" />
+                    </Button>
+
+                    <ThemeToggleButton />
+                  </div>
+
+                </Menubar>
+
+                <div className="flex w-full justify-center px-4">
+                  <section className="w-full max-w-6xl flex-1 py-6">
+                    {children}
+                  </section>
+                </div>
               </div>
-
-              <div className="flex items-center">
-                <Button
-                  onClick={() => window.open("https://github.com/eraguzy/arbies", "_blank")}
-                  className="rounded-full bg-background p-2 hover:bg-muted cursor-pointer"
-                >
-                  <img src="/github.png" alt="Github" className="h-4 w-4 dark:invert" />
-                </Button>
-
-                <ThemeToggleButton />
-              </div>
-
-            </Menubar>
-
-            <div className="flex w-full justify-center px-4">
-              <section className="w-full max-w-6xl flex-1 py-6">
-                {children}
-              </section>
-            </div>
-          </div>
+            ) : null
+          }
 
           {/* fallback if too small */}
           <div className="block md:hidden">

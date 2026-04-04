@@ -3,7 +3,8 @@
 import React from "react";
 import DexesSelector from "@/components/selectors/dexes";
 import TableFundings from "./components/table-fundings";
-import { DexValues } from "@/lib/funding/dexes/arbies";
+import { AllDexes, DexValues } from "@/lib/funding/dexes/arbies";
+import { readStoredDexes, storageKeys } from "./components/browserStorage";
 
 export const FundingContext = React.createContext({
 	selected: [] as DexValues[], // horizontal axis
@@ -15,9 +16,17 @@ export const FundingContext = React.createContext({
 // if in funding mode (no comparison selected), show the funding for each pair and dex
 // if in comparison mode (comparison selected), show the difference in funding between the selected dexes for each pair
 export default function Funding() {
-	const [selected, setSelected] = React.useState<DexValues[]>([]); // horizontal axis
-	const [compared, setCompared] = React.useState<DexValues[]>([]); // vertical axis
+	const [selected, setSelected] = React.useState<DexValues[]>(readStoredDexes(storageKeys.selectedDexes, Object.values(AllDexes))); // horizontal axis
+	const [compared, setCompared] = React.useState<DexValues[]>(readStoredDexes(storageKeys.comparedDexes, [])); // vertical axis
 	const [comparisonMode, setComparisonMode] = React.useState<boolean>(false); // choose between funding mode and comparison mode
+
+	React.useEffect(() => {
+		window.localStorage.setItem(storageKeys.selectedDexes, JSON.stringify(selected));
+	}, [selected]);
+
+	React.useEffect(() => {
+		window.localStorage.setItem(storageKeys.comparedDexes, JSON.stringify(compared));
+	}, [compared]);
 
 	React.useEffect(() => {
 		setComparisonMode(compared.length > 0 && selected.length > 0);
@@ -35,14 +44,12 @@ export default function Funding() {
 						selected={selected}
 						setSelected={setSelected}
 						multiple
-						defaultSelected={true}
 					/>
 					to compare with
 					<DexesSelector
 						selected={compared}
 						setSelected={setCompared}
 						multiple
-						defaultSelected={false}
 						disabled={selected.length === 0}
 					/>
 				</div>
