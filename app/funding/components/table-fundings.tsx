@@ -6,6 +6,7 @@ import { HTTPParams } from "@/app/api/req-params";
 import { AllDexes, DexesPairsMapping, DexValues } from "@/lib/funding/dexes/arbies";
 import { AssetAndFdg } from "@/app/api/funding/utils";
 import { AssetValues } from "@/lib/funding/assets";
+import { readStoredAssets, storageKeys } from "./browserStorage";
 
 function ComparisonModeRows({ assets }: { assets: AssetValues[] }) {
   const { selected, compared } = useContext(FundingContext);
@@ -75,9 +76,13 @@ export const FundingsCtx = createContext({} as Record<DexValues, AssetAndFdg[]>)
 
 export default function TableFundings() {
   const { selected, comparisonMode } = useContext(FundingContext);
-  const [assets, setAssets] = useState<AssetValues[]>([]); // selected pairs
+  const [assets, setAssets] = useState<AssetValues[]>(() => readStoredAssets()); // selected pairs
   // map dexes to their fundings for the selected pairs
   const [fundingsPerDex, setFundingsPerDex] = useState<Record<DexValues, AssetAndFdg[]>>({});
+
+  useEffect(() => {
+    window.localStorage.setItem(storageKeys.assets, JSON.stringify(assets));
+  }, [assets]);
 
   useEffect(() => {
     if (!assets.length) return;
@@ -187,7 +192,6 @@ export default function TableFundings() {
                 <AssetSelector
                   selected={assets}
                   setSelected={setAssets}
-                  defaultSelected={true}
                   disabled={selected.length === 0}
                 />
               </TableHead>

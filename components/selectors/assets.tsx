@@ -14,20 +14,12 @@ import { ArbiesAssets, AssetValues } from "@/lib/funding/assets";
 export default function AssetSelector(
   { selected,
     setSelected,
-    defaultSelected,
     disabled
   }: {
     selected: AssetValues[];
     setSelected: React.Dispatch<React.SetStateAction<AssetValues[]>>;
-    defaultSelected: boolean;
     disabled?: boolean;
   }) {
-
-  React.useEffect(() => {
-    if (defaultSelected) {
-      setSelected(Object.values(ArbiesAssets));
-    }
-  }, []);
 
   const anchor = useComboboxAnchor();
   const hasAllSelected = selected.length === Object.values(ArbiesAssets).length;
