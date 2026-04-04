@@ -12,13 +12,11 @@ export default function DexesSelector(
 	{ selected,
 		setSelected,
 		multiple = false,
-		defaultSelected,
 		disabled = false,
 	}: {
 		selected: DexValues[];
 		setSelected: React.Dispatch<React.SetStateAction<DexValues[]>>;
 		multiple?: boolean;
-		defaultSelected: boolean;
 		disabled?: boolean;
 	}) {
 
@@ -35,10 +33,6 @@ export default function DexesSelector(
 			setSelected([opt]);
 		}
 	}
-
-	React.useEffect(() => {
-		setSelected(defaultSelected ? Object.values(AllDexes) : []);
-	}, [])
 
 	return (
 		<Popover
