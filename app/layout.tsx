@@ -81,7 +81,7 @@ export default function RootLayout({
         <ThemeProvider enableSystem>
           {/* only on large screen*/}
           <div className="hidden md:block">
-            <Menubar className="h-12 px-4 border-b flex items-center justify-between">
+            <Menubar className="h-12 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="select-none text-xl text-primary">Arbies</div>
 
