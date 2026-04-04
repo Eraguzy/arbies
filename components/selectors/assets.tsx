@@ -8,6 +8,7 @@ import {
   ComboboxList,
   useComboboxAnchor,
 } from "@/components/ui/combobox"
+import { Button } from "@/components/ui/button"
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets";
 
 export default function AssetSelector(
@@ -29,6 +30,11 @@ export default function AssetSelector(
   }, []);
 
   const anchor = useComboboxAnchor();
+  const hasAllSelected = selected.length === Object.values(ArbiesAssets).length;
+
+  const toggleSelectAll = () => {
+    setSelected(hasAllSelected ? [] : Object.values(ArbiesAssets));
+  };
 
   return (
     <Combobox
@@ -40,6 +46,18 @@ export default function AssetSelector(
     >
       <ComboboxInput placeholder="Select assets" className="w-35" />
       <ComboboxContent anchor={anchor} className="w-35">
+        <div className="border-b border-border bg-popover p-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 w-full justify-start hover:cursor-pointer"
+            onClick={toggleSelectAll}
+            disabled={disabled}
+          >
+            {hasAllSelected ? "Deselect all" : "Select all"}
+          </Button>
+        </div>
         <ComboboxEmpty>No items found.</ComboboxEmpty>
         <ComboboxList>
           {(item) => (

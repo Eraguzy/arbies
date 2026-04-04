@@ -5,7 +5,6 @@ import { FundingContext } from "../page";
 import { HTTPParams } from "@/app/api/req-params";
 import { AllDexes, DexesPairsMapping, DexValues } from "@/lib/funding/dexes/arbies";
 import { AssetAndFdg } from "@/app/api/funding/utils";
-import { HLPairRegistry } from "@/lib/funding/dexes/hyperliquid";
 import { AssetValues } from "@/lib/funding/assets";
 
 function ComparisonModeRows({ assets }: { assets: AssetValues[] }) {
