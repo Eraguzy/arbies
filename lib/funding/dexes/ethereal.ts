@@ -1,6 +1,6 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
 
-// match Ethereal pairs with the local registry ; they are mapped by ids on the api
+// match Ethereal pairs with the local registry
 export const EtherealPairRegistry: Record<string, AssetValues> = {
   "BTCUSD": ArbiesAssets.BTC,
   "ETHUSD": ArbiesAssets.ETH,

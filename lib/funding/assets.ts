@@ -1,3 +1,4 @@
+// key used by registries => string displayed in funding table 
 export const ArbiesAssets = {
   // crypto
   "0G": "0G",
@@ -198,7 +199,7 @@ export const ArbiesAssets = {
   SNX: "SNX",
   SOL: "SOL",
   SOPH: "SOPH",
-  SPX6900: "SPX6900",
+  SPX6900: "SPX6900", // memecoin !! not the index
   STABLE: "STABLE",
   STBL: "STBL",
   STG: "STG",
@@ -229,6 +230,7 @@ export const ArbiesAssets = {
   VIRTUAL: "VIRTUAL",
   VVV: "VVV",
   W: "W",
+  WAL: "WAL",
   WCT: "WCT",
   WIF: "WIF",
   WLD: "WLD",
@@ -284,6 +286,7 @@ export const ArbiesAssets = {
   MSFT: "MSFT",
   MSTR: "MSTR",
   MU: "MU",
+  NASDAQ: "NASDAQ",
   NOC: "NOC",
   NVDA: "NVDA",
   PLTR: "PLTR",
@@ -293,17 +296,18 @@ export const ArbiesAssets = {
   SAMSUNG: "SAMSUNG",
   SKHYNIX: "SKHYNIX",
   SNDK: "SNDK",
-  SPY: "SPY",
+  SP500: "SPY500",
   TSLA: "TSLA",
 
   // commodities
   URA: "URA", // Uranium
   BRENTOIL: "BRENTOIL", // Brent Oil
-  WTI: "WTI", // West Texas Intermediate Crude Oil
+  CL: "CL", // CL oil or WTI
   NATGAS: "NATGAS", // Natural Gas
   PAXG: "PAXG", // Physical Gold
-  XAG: "XAG", // Silver
   XAU: "XAU", // Gold
+  XAUT: "XAUT", // Tether Gold
+  XAG: "XAG", // Silver
   XCU: "XCU", // Copper
   XPD: "XPD", // Palladium
   XPT: "XPT", // Platinum

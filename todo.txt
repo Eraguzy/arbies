@@ -4,4 +4,3 @@
 -add todo steps for new dex
 -parallelize 01/paradex reqs
 -avoid order change when selecting
--keep select in browser memory
