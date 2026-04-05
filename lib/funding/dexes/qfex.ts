@@ -4,7 +4,7 @@ import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
 export const QFEXPairRegistry: Record<string, AssetValues> = {
   "AAPL-USD": ArbiesAssets.AAPL,
   "BA-USD": ArbiesAssets.BA,
-  "CL-USD": ArbiesAssets.WTI,
+  "CL-USD": ArbiesAssets.CL,
   "COPPER-USD": ArbiesAssets.XCU,
   "CRCL-USD": ArbiesAssets.CRCL,
   "CRWV-USD": ArbiesAssets.CRWV,
@@ -29,7 +29,7 @@ export const QFEXPairRegistry: Record<string, AssetValues> = {
   "SNDK-USD": ArbiesAssets.SNDK,
   "TSLA-USD": ArbiesAssets.TSLA,
   "URANIUM-USD": ArbiesAssets.URA,
-  // "US100-USD": ArbiesAssets.US100,
-  // "US500-USD": ArbiesAssets.US500,
+  "US100-USD": ArbiesAssets.NASDAQ,
+  "US500-USD": ArbiesAssets.SP500,
 }
 
