@@ -2,8 +2,8 @@ import { useContext, useEffect, useState, createContext } from "react";
 import { Table, TableCaption, TableHeader, TableRow, TableCell, TableHead, TableBody } from "@/components/ui/table";
 import AssetSelector from "@/components/selectors/assets";
 import { FundingContext } from "../page";
-import { HTTPParams } from "@/app/api/req-params";
-import { AllDexes, DexesPairsMapping, DexValues } from "@/lib/funding/dexes/arbies";
+import { fetchoor } from "./fetchoor";
+import { DexesPairsMapping, DexValues } from "@/lib/funding/dexes/arbies";
 import { AssetAndFdg } from "@/app/api/funding/utils";
 import { AssetValues } from "@/lib/funding/assets";
 import { readStoredAssets, storageKeys } from "./browserStorage";
@@ -86,93 +86,10 @@ export default function TableFundings() {
 
   useEffect(() => {
     if (!assets.length) return;
+    fetchoor(new Set(selected), new Set(assets), setFundingsPerDex); // immediate call
 
-    const fetchFundings = () => {
-      fetch('/api/funding/hyperliquid/funding'
-        + '?' + HTTPParams.assets + '=' + assets.join(','))
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return console.error('err while fetching HL funding data:', data.error);
-          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Hyperliquid]: data || [] }));
-        })
-        .catch(err => console.error(err));
-
-      fetch('/api/funding/lighter/funding'
-        + '?' + HTTPParams.assets + '=' + assets.join(','))
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return console.error('err while fetching Lighter funding data:', data.error);
-          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Lighter]: data || [] }));
-        })
-        .catch(err => console.error(err));
-
-      fetch('/api/funding/qfex/funding'
-        + '?' + HTTPParams.assets + '=' + assets.join(','))
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return console.error('err while fetching QFEX funding data:', data.error);
-          setFundingsPerDex(prev => ({ ...prev, [AllDexes.QFEX]: data || [] }));
-        })
-        .catch(err => console.error(err));
-
-      fetch('/api/funding/extended/funding'
-        + '?' + HTTPParams.assets + '=' + assets.join(','))
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return console.error('err while fetching Extended funding data:', data.error);
-          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Extended]: data || [] }));
-        })
-        .catch(err => console.error(err));
-
-      fetch('/api/funding/variational/funding'
-        + '?' + HTTPParams.assets + '=' + assets.join(','))
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return console.error('err while fetching Variational funding data:', data.error);
-          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Variational]: data || [] }));
-        })
-        .catch(err => console.error(err));
-
-      fetch('/api/funding/pacifica/funding'
-        + '?' + HTTPParams.assets + '=' + assets.join(','))
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return console.error('err while fetching Pacifica funding data:', data.error);
-          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Pacifica]: data || [] }));
-        })
-        .catch(err => console.error(err));
-
-      fetch('/api/funding/ethereal/funding'
-        + '?' + HTTPParams.assets + '=' + assets.join(','))
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return console.error('err while fetching Ethereal funding data:', data.error);
-          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Ethereal]: data || [] }));
-        })
-        .catch(err => console.error(err));
-
-      fetch('/api/funding/01/funding'
-        + '?' + HTTPParams.assets + '=' + assets.join(','))
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return console.error('err while fetching 01 funding data:', data.error);
-          setFundingsPerDex(prev => ({ ...prev, [AllDexes['01']]: data || [] }));
-        })
-        .catch(err => console.error(err));
-
-      fetch('/api/funding/paradex/funding'
-        + '?' + HTTPParams.assets + '=' + assets.join(','))
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return console.error('err while fetching Paradex funding data:', data.error);
-          setFundingsPerDex(prev => ({ ...prev, [AllDexes.Paradex]: data || [] }));
-        })
-        .catch(err => console.error(err));
-    }
-
-    fetchFundings(); // immediate call
     const interval = setInterval(() => {
-      fetchFundings();
+      fetchoor(new Set(selected), new Set(assets), setFundingsPerDex);
     }, 30000); // fetch every 30 seconds
 
     return () => clearInterval(interval); // cleanup 
