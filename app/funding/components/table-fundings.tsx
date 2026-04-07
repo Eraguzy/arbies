@@ -6,7 +6,7 @@ import { X } from 'lucide-react'
 
 import { FundingContext } from "../page";
 import { fetchoor } from "./fetchoor";
-import { readStoredAssets, storageKeys } from "./browserStorage";
+import { readStoredAssets, storageKeys, writeStoredAssets } from "./browserStorage";
 import { DexesPairsMapping, DexValues } from "@/lib/funding/dexes/arbies";
 import { AssetAndFdg } from "@/app/api/funding/utils";
 import { AssetValues } from "@/lib/funding/assets";
@@ -106,10 +106,8 @@ export default function TableFundings() {
   const [isDexLoading, setIsDexLoading] = useState<Record<DexValues, boolean>>({});
 
   useEffect(() => {
-    window.localStorage.setItem(storageKeys.assets, JSON.stringify(assets));
-  }, [assets]);
+    writeStoredAssets(assets);
 
-  useEffect(() => {
     if (!assets.length) return;
 
     fetchoor(new Set(selected), new Set(assets), setFundingsPerDex, setIsDexLoading); // immediate call

@@ -44,3 +44,7 @@ export function readStoredAssets(): AssetValues[] {
     return Object.values(ArbiesAssets);
   }
 }
+
+export function writeStoredAssets(assets: AssetValues[]) {
+  window.localStorage.setItem(storageKeys.assets, JSON.stringify(assets));
+}
