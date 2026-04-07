@@ -1,4 +1,3 @@
--add all pairs
 -loading state
 -compare module
 -add todo steps for new dex
