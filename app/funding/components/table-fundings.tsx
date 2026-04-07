@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState, createContext } from "react";
 import { Table, TableCaption, TableHeader, TableRow, TableCell, TableHead, TableBody } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import AssetSelector from "@/components/selectors/assets";
 import { FundingContext } from "../page";
 import { fetchoor } from "./fetchoor";
@@ -44,6 +45,7 @@ function ComparisonModeRows({ assets }: { assets: AssetValues[] }) {
 
 function FundingModeRows({ assets }: { assets: AssetValues[] }) {
   const fundingsPerDex = useContext(FundingsCtx);
+  const isDexLoading = useContext(DexesLoadingCtx);
   const { selected } = useContext(FundingContext);
 
   return (<>
@@ -59,26 +61,31 @@ function FundingModeRows({ assets }: { assets: AssetValues[] }) {
             return (
               <TableCell key={dex} className="h-10">
                 {
-                  foundFunding !== undefined
-                    ? foundFunding.toFixed(2) + ' %'
-                    : 'N/A'
+                  isDexLoading[dex]
+                    ? <Skeleton className="w-10 h-full" />
+                    : foundFunding !== undefined
+                      ? foundFunding.toFixed(2) + ' %'
+                      : 'N/A'
                 }
               </TableCell>
             )
           })
         }
-      </TableRow>
-    ))}
+      </TableRow >
+    ))
+    }
   </>);
 }
 
 export const FundingsCtx = createContext({} as Record<DexValues, AssetAndFdg[]>);
+export const DexesLoadingCtx = createContext({} as Record<DexValues, boolean>);
 
 export default function TableFundings() {
   const { selected, comparisonMode } = useContext(FundingContext);
   const [assets, setAssets] = useState<AssetValues[]>(() => readStoredAssets()); // selected pairs
   // map dexes to their fundings for the selected pairs
   const [fundingsPerDex, setFundingsPerDex] = useState<Record<DexValues, AssetAndFdg[]>>({});
+  const [isDexLoading, setIsDexLoading] = useState<Record<DexValues, boolean>>({});
 
   useEffect(() => {
     window.localStorage.setItem(storageKeys.assets, JSON.stringify(assets));
@@ -86,10 +93,11 @@ export default function TableFundings() {
 
   useEffect(() => {
     if (!assets.length) return;
-    fetchoor(new Set(selected), new Set(assets), setFundingsPerDex); // immediate call
+
+    fetchoor(new Set(selected), new Set(assets), setFundingsPerDex, setIsDexLoading); // immediate call
 
     const interval = setInterval(() => {
-      fetchoor(new Set(selected), new Set(assets), setFundingsPerDex);
+      fetchoor(new Set(selected), new Set(assets), setFundingsPerDex, setIsDexLoading);
     }, 30000); // fetch every 30 seconds
 
     return () => clearInterval(interval); // cleanup 
@@ -121,13 +129,15 @@ export default function TableFundings() {
       </TableHeader>
 
       <FundingsCtx value={fundingsPerDex}>
-        <TableBody>
-          {comparisonMode ? (
-            <ComparisonModeRows assets={assets} />
-          ) :
-            <FundingModeRows assets={assets} />
-          }
-        </TableBody>
+        <DexesLoadingCtx value={isDexLoading}>
+          <TableBody>
+            {comparisonMode ? (
+              <ComparisonModeRows assets={assets} />
+            ) :
+              <FundingModeRows assets={assets} />
+            }
+          </TableBody>
+        </DexesLoadingCtx>
       </FundingsCtx>
     </Table>
   )
