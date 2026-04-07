@@ -2,12 +2,14 @@ import { useContext, useEffect, useState, createContext } from "react";
 import { Table, TableCaption, TableHeader, TableRow, TableCell, TableHead, TableBody } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import AssetSelector from "@/components/selectors/assets";
+import { X } from 'lucide-react'
+
 import { FundingContext } from "../page";
 import { fetchoor } from "./fetchoor";
+import { readStoredAssets, storageKeys } from "./browserStorage";
 import { DexesPairsMapping, DexValues } from "@/lib/funding/dexes/arbies";
 import { AssetAndFdg } from "@/app/api/funding/utils";
 import { AssetValues } from "@/lib/funding/assets";
-import { readStoredAssets, storageKeys } from "./browserStorage";
 
 function ComparisonModeRows({ assets }: { assets: AssetValues[] }) {
   const { selected, compared } = useContext(FundingContext);
@@ -43,15 +45,31 @@ function ComparisonModeRows({ assets }: { assets: AssetValues[] }) {
   );
 }
 
-function FundingModeRows({ assets }: { assets: AssetValues[] }) {
+function FundingModeRows({
+  assets,
+  setAssets,
+}: {
+  assets: AssetValues[],
+  setAssets: React.Dispatch<React.SetStateAction<AssetValues[]>>
+}) {
   const fundingsPerDex = useContext(FundingsCtx);
   const isDexLoading = useContext(DexesLoadingCtx);
   const { selected } = useContext(FundingContext);
 
+  const handleXClick = (asset: AssetValues) => {
+    setAssets(prev => prev.filter(a => a !== asset));
+  }
+
   return (<>
     {assets.map((pair: AssetValues) => (
       <TableRow key={pair}>
-        <TableCell className="h-10">{pair}</TableCell>
+        <TableCell className="h-10 flex items-center">
+          {pair}
+          <X
+            className="h-3 hover:cursor-pointer hover:text-white text-gray-500 transition-colors duration-100"
+            onClick={() => handleXClick(pair)}
+          />
+        </TableCell>
         {
           selected.map((dex) => {
             const foundFunding = fundingsPerDex[dex]?.find(
@@ -71,7 +89,7 @@ function FundingModeRows({ assets }: { assets: AssetValues[] }) {
             )
           })
         }
-      </TableRow >
+      </TableRow>
     ))
     }
   </>);
@@ -98,7 +116,7 @@ export default function TableFundings() {
 
     const interval = setInterval(() => {
       fetchoor(new Set(selected), new Set(assets), setFundingsPerDex, setIsDexLoading);
-    }, 30000); // fetch every 30 seconds
+    }, 60000); // fetch every minute
 
     return () => clearInterval(interval); // cleanup 
   }, [assets]);
@@ -134,7 +152,7 @@ export default function TableFundings() {
             {comparisonMode ? (
               <ComparisonModeRows assets={assets} />
             ) :
-              <FundingModeRows assets={assets} />
+              <FundingModeRows assets={assets} setAssets={setAssets} />
             }
           </TableBody>
         </DexesLoadingCtx>
