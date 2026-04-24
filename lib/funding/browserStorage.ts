@@ -8,8 +8,8 @@ export const storageKeys = {
 } as const;
 
 // some magic to keep a consistent order of assets in the UI based on what's in ArbiesAssets
-const canonicalAssetOrder = Object.values(ArbiesAssets);
-const canonicalAssetIndex = new Map(
+export const canonicalAssetOrder = Object.values(ArbiesAssets);
+export const canonicalAssetIndex = new Map(
   canonicalAssetOrder.map((asset, index) => [asset, index]),
 );
 
@@ -46,20 +46,20 @@ export function readStoredAssets(): AssetValues[] {
         && canonicalAssetOrder.includes(value as AssetValues)
     );
 
-    return assets.sort(
-      (a, b) => (canonicalAssetIndex.get(a) ?? Infinity) // put unknown assets at the end
-        - (canonicalAssetIndex.get(b) ?? Infinity),
-    );
+    return sortAssets(assets);
   } catch {
     return canonicalAssetOrder;
   }
 }
 
 export function writeStoredAssets(assets: AssetValues[]) {
-  const orderedAssets = [...assets].sort(
+  const orderedAssets = sortAssets(assets);
+  window.localStorage.setItem(storageKeys.assets, JSON.stringify(orderedAssets));
+}
+
+export function sortAssets(values: AssetValues[]) {
+  return [...values].sort(
     (a, b) => (canonicalAssetIndex.get(a) ?? Infinity) // put unknown assets at the end
       - (canonicalAssetIndex.get(b) ?? Infinity),
   );
-
-  window.localStorage.setItem(storageKeys.assets, JSON.stringify(orderedAssets));
 }
