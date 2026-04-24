@@ -1,3 +1,4 @@
 -compare module
 -add todo steps for new dex
 -parallelize 01/paradex reqs
+-some ai to track new listings?

@@ -4,7 +4,7 @@ import React from "react";
 import DexesSelector from "@/components/selectors/dexes";
 import TableFundings from "./components/table-fundings";
 import { AllDexes, DexValues } from "@/lib/funding/dexes/arbies";
-import { readStoredDexes, storageKeys } from "./components/browserStorage";
+import { readStoredDexes, storageKeys } from "../../lib/funding/browserStorage";
 
 export const FundingContext = React.createContext({
 	selected: [] as DexValues[], // horizontal axis

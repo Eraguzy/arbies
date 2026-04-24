@@ -6,7 +6,7 @@ import { X } from 'lucide-react'
 
 import { FundingContext } from "../page";
 import { fetchoor } from "./fetchoor";
-import { readStoredAssets, storageKeys, writeStoredAssets } from "./browserStorage";
+import { readStoredAssets, storageKeys, writeStoredAssets } from "../../../lib/funding/browserStorage";
 import { DexesPairsMapping, DexValues } from "@/lib/funding/dexes/arbies";
 import { AssetAndFdg } from "@/app/api/funding/utils";
 import { AssetValues } from "@/lib/funding/assets";

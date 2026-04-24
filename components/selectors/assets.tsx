@@ -9,7 +9,8 @@ import {
   useComboboxAnchor,
 } from "@/components/ui/combobox"
 import { Button } from "@/components/ui/button"
-import { ArbiesAssets, AssetValues } from "@/lib/funding/assets";
+import { AssetValues } from "@/lib/funding/assets";
+import { canonicalAssetOrder, sortAssets } from "@/lib/funding/browserStorage";
 
 export default function AssetSelector(
   { selected,
@@ -22,18 +23,18 @@ export default function AssetSelector(
   }) {
 
   const anchor = useComboboxAnchor();
-  const hasAllSelected = selected.length === Object.values(ArbiesAssets).length;
+  const hasAllSelected = selected.length === canonicalAssetOrder.length;
 
   const toggleSelectAll = () => {
-    setSelected(hasAllSelected ? [] : Object.values(ArbiesAssets));
+    setSelected(hasAllSelected ? [] : canonicalAssetOrder);
   };
 
   return (
     <Combobox
-      items={Object.values(ArbiesAssets)}
+      items={canonicalAssetOrder}
       multiple
       value={selected}
-      onValueChange={setSelected}
+      onValueChange={(next) => setSelected(sortAssets(next))}
       disabled={disabled}
     >
       <ComboboxInput placeholder="Select assets" className="w-35" />
