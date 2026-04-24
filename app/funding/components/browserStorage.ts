@@ -7,6 +7,12 @@ export const storageKeys = {
   assets: "arbies:funding:selected-assets",
 } as const;
 
+// some magic to keep a consistent order of assets in the UI based on what's in ArbiesAssets
+const canonicalAssetOrder = Object.values(ArbiesAssets);
+const canonicalAssetIndex = new Map(
+  canonicalAssetOrder.map((asset, index) => [asset, index]),
+);
+
 // read either selected or compared dexes from local storage
 export function readStoredDexes(key: string, fallback: DexValues[]): DexValues[] {
   try {
@@ -30,21 +36,30 @@ export function readStoredDexes(key: string, fallback: DexValues[]): DexValues[]
 export function readStoredAssets(): AssetValues[] {
   try {
     const raw = window.localStorage.getItem(storageKeys.assets);
-    if (!raw) return Object.values(ArbiesAssets);
+    if (!raw) return canonicalAssetOrder;
 
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return Object.values(ArbiesAssets);
+    if (!Array.isArray(parsed)) return canonicalAssetOrder;
 
     const assets = parsed.filter(
       (value): value is AssetValues => typeof value === "string"
-        && Object.values(ArbiesAssets).includes(value as AssetValues)
+        && canonicalAssetOrder.includes(value as AssetValues)
     );
-    return assets;
+
+    return assets.sort(
+      (a, b) => (canonicalAssetIndex.get(a) ?? Infinity) // put unknown assets at the end
+        - (canonicalAssetIndex.get(b) ?? Infinity),
+    );
   } catch {
-    return Object.values(ArbiesAssets);
+    return canonicalAssetOrder;
   }
 }
 
 export function writeStoredAssets(assets: AssetValues[]) {
-  window.localStorage.setItem(storageKeys.assets, JSON.stringify(assets));
+  const orderedAssets = [...assets].sort(
+    (a, b) => (canonicalAssetIndex.get(a) ?? Infinity) // put unknown assets at the end
+      - (canonicalAssetIndex.get(b) ?? Infinity),
+  );
+
+  window.localStorage.setItem(storageKeys.assets, JSON.stringify(orderedAssets));
 }
