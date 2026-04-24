@@ -57,6 +57,7 @@ export const ArbiesAssets = {
   CANTO: "CANTO",
   CATI: "CATI",
   CC: "CC",
+  CHIP: "CHIP",
   CELO: "CELO",
   CFX: "CFX",
   CHILLGUY: "CHILLGUY",

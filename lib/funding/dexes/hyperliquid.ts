@@ -230,5 +230,6 @@ export const HLPairRegistry: Record<string, AssetValues> = {
   "AXS": ArbiesAssets.AXS,
   "DASH": ArbiesAssets.DASH,
   "SKR": ArbiesAssets.SKR,
-  "AZTEC": ArbiesAssets.AZTEC
+  "AZTEC": ArbiesAssets.AZTEC,
+  "CHIP": ArbiesAssets.CHIP,
 }
