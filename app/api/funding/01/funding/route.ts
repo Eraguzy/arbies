@@ -7,7 +7,7 @@ import { annualizeHourlyFunding } from '../../utils';
 import { AssetValues } from '@/lib/funding/assets';
 
 // get Zo ids based on the local pairs
-// return format: [{ id: '312bfacfb767', ticker: 'BTCUSD' }, ...]
+// return format: [{ id: '0', ticker: 'BTCUSD' }, ...]
 async function getIdsAndTickers(assets: AssetValues[]): Promise<Map<number, keyof typeof ZoPairRegistry>> {
   const res = await fetch(
     ZoApiUrl + ZoApiUrlEndpoints.info,
@@ -38,26 +38,25 @@ export async function GET(request: NextRequest) {
 
   // get Zo ids
   const idsAndTickers = await getIdsAndTickers(pairs);
+  const settled = await Promise.allSettled(
+    idsAndTickers.entries().map(
+      async ([id, ticker]) => {
+        const res = await fetch(ZoApiUrl + ZoApiUrlEndpoints.stats(id), { method: 'GET' });
+        const data = await res.json();
+        if (!data?.perpStats?.funding_rate) return null;
 
-  let assetsAndFundings = [] as AssetAndFdg[];
-  // fetch the funding for each pair based on their id
-  for (const [idt, ticker] of idsAndTickers) {
-    const res = await fetch(
-      ZoApiUrl + ZoApiUrlEndpoints.stats(idt),
-      {
-        method: 'GET',
-        // headers: { accept: 'application/json' },
+        return {
+          name: ZoPairRegistry[ticker], // get the local ticker name from id
+          funding: annualizeHourlyFunding(data.perpStats.funding_rate), // it's already annualized as a rate in api
+        } satisfies AssetAndFdg;
       }
-    );
-    const data = await res.json();
-    if (!data) return NextResponse.json({ error: 'No data found' }, { status: 404 });
+    )
+  );
 
-    const local: AssetAndFdg = {
-      name: ZoPairRegistry[ticker], // get the local ticker name from id
-      funding: annualizeHourlyFunding(data.perpStats.funding_rate), // it's already annualized as a rate in api
-    }
-    assetsAndFundings.push(local);
-  }
+  const assetsAndFundings = settled
+    .filter((r): r is PromiseFulfilledResult<AssetAndFdg | null> => r.status === 'fulfilled') // keep only fulfilled promises
+    .map(r => r.value) // keep values from promises
+    .filter((v): v is AssetAndFdg => v !== null); // filter out null values
 
   return NextResponse.json(assetsAndFundings);
 }
