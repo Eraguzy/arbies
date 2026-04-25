@@ -11,28 +11,25 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const pairs: AssetValues[] = searchParams.get(HTTPParams.assets)?.split(',') as AssetValues[] || [];
 
-  let assetsAndFundings: AssetAndFdg[] = [];
-  for (const pair of pairs) {
-    const res = await fetch(
-      ParadexApiUrl + ParadexApiUrlEndpoints.funding
-      + "?market=" + getParadexPair(pair),
-      {
-        method: 'GET',
-        headers: { accept: 'application/json' },
-      }
-    );
-    const data = await res.json();
+  const settled = await Promise.allSettled(
+    pairs.map(async (pair) => {
+      const res = await fetch(
+        ParadexApiUrl + ParadexApiUrlEndpoints.funding + '?market=' + getParadexPair(pair),
+        { method: 'GET', headers: { accept: 'application/json' } }
+      );
+      const data = await res.json();
+      if (!data?.results?.length) return null;
 
-    if (!data || !data.results) {
-      return NextResponse.json({ error: 'No data found' }, { status: 404 });
-    }
-    if (data.results.length === 0) continue
+      return {
+        name: pair,
+        funding: annualize8HourlyFunding(data.results[0].funding_rate),
+      } satisfies AssetAndFdg;
+    })
+  );
 
-    assetsAndFundings.push({
-      name: pair,
-      funding: annualize8HourlyFunding(data.results[0].funding_rate), // take the first one, should be the most recent
-    });
-  }
-
+  const assetsAndFundings = settled
+    .filter((r): r is PromiseFulfilledResult<AssetAndFdg | null> => r.status === 'fulfilled') // keep only fulfilled promises
+    .map(r => r.value)// keep values from promises
+    .filter((v): v is AssetAndFdg => v !== null); // filter out null values
   return NextResponse.json(assetsAndFundings);
 }
