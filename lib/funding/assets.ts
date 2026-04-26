@@ -276,7 +276,6 @@ export const ArbiesAssets = {
   DIA: "DIA",
   GD: "GD",
   GOOGL: "GOOGL",
-  HANMI: "HANMI",
   HOOD: "HOOD",
   HYUNDAI: "HYUNDAI",
   INTC: "INTC",
