@@ -19,9 +19,9 @@ export const AllDexes = {
   Ethereal: "Ethereal",
   Paradex: "Paradex",
   "01": "01",
-}
+} as const;
 
-export type DexValues = typeof AllDexes[keyof typeof AllDexes]
+export type DexValues = typeof AllDexes[keyof typeof AllDexes];
 
 export const DexesPairsMapping: Record<DexValues, Record<string, AssetValues>> = {
   [AllDexes.Hyperliquid]: HLPairRegistry,
