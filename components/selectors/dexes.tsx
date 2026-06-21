@@ -38,10 +38,14 @@ export default function DexesSelector(
 		<Popover
 			open={open}
 			onOpenChange={(nextOpen) => {
-				disabled ? setOpen(false) : setOpen(nextOpen);
+				if (disabled) {
+					setOpen(false);
+				} else {
+					setOpen(nextOpen);
+				}
 			}}
 		>
-			<PopoverTrigger>
+			<PopoverTrigger asChild>
 				<Button className="cursor-pointer" disabled={disabled}>
 					{multiple ?
 						`Select DEXes` :

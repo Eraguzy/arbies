@@ -1,13 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { QfexApiUrl, QfexApiUrlEndpoints } from '../utils';
-import { HTTPParams } from '@/app/api/req-params';
-import { annualize8HourlyFunding, AssetAndFdg } from '../../utils';
+import { } from '@/app/api/req-params';
+import { AssetAndFdg } from '../../utils';
 import { QFEXPairRegistry } from '@/lib/funding/dexes/qfex';
 
 // retrieve all coins ctx and keep the ones wanted
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const pairs = searchParams.get(HTTPParams.assets)?.split(',') || [];
+export async function GET() {
 
   const res = await fetch(
     QfexApiUrl + QfexApiUrlEndpoints.symbolsMetrics,
