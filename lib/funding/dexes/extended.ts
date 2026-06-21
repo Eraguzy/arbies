@@ -1,4 +1,8 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
+import { HTTPParams } from "@/app/api/req-params"
+import { AssetAndFdg, annualizeHourlyFunding } from "@/app/api/funding/utils"
+import type { Dex } from "@/lib/funding/dexes/arbies"
+import { NextRequest, NextResponse } from "next/server"
 
 // match Extended pairs with the local registry ; they are mapped by ids on the api
 export const ExtndPairRegistry: Record<string, AssetValues> = {
@@ -113,5 +117,73 @@ export const ExtndPairRegistry: Record<string, AssetValues> = {
 }
 
 export function getExtendedPair(asset: AssetValues): string | undefined {
-  return Object.entries(ExtndPairRegistry).find(([_, value]) => value === asset)?.[0]
+  return Object.entries(ExtndPairRegistry).find((entry) => entry[1] === asset)?.[0]
 }
+
+const ExtndApiUrl = "https://api.starknet.extended.exchange/api/v1/info";
+
+const ExtndApiUrlEndpoints = {
+  markets: "/markets",
+  fundings: "/fundings",
+  fundingRates: "/funding-rates",
+};
+
+type ExtndMarket = {
+  name: string;
+  marketStats: {
+    fundingRate: number;
+  };
+};
+
+export const ExtndDex = {
+  Name: "Extended",
+  PairRegistry: ExtndPairRegistry,
+  ApiUrl: ExtndApiUrl,
+  ApiUrlEndpoints: ExtndApiUrlEndpoints,
+
+  async GetCurrentFunding(request: NextRequest) {
+    const { searchParams } = new URL(request.url);
+    const pairs = searchParams.get(HTTPParams.assets)?.split(",") || [];
+
+    const extndPairs: string[] = [];
+    for (const pair of pairs) {
+      const extendedPair = getExtendedPair(pair as AssetValues);
+      if (extendedPair) {
+        extndPairs.push(extendedPair);
+      }
+    }
+
+    if (extndPairs.length === 0) {
+      return NextResponse.json({ error: "no valid pairs provided" }, { status: 400 });
+    }
+
+    const res = await fetch(
+      ExtndApiUrl + ExtndApiUrlEndpoints.markets
+      + "?market=" + extndPairs.join("&market="),
+      {
+        method: "GET",
+        headers: { accept: "application/json" },
+      }
+    );
+    const data = await res.json();
+    if (data.status !== "ok" && data.status !== "OK") {
+      return NextResponse.json({ error: "status is invalid" }, { status: 500 });
+    }
+    if (!data || !data.data || data.data.length === 0) {
+      return NextResponse.json({ error: "No data found" }, { status: 404 });
+    }
+
+    const assetsAndFundings: AssetAndFdg[] = data.data.map((universe: ExtndMarket) => {
+      return {
+        name: ExtndPairRegistry[universe.name],
+        funding: annualizeHourlyFunding(universe.marketStats.fundingRate),
+      };
+    });
+
+    return NextResponse.json(assetsAndFundings);
+  },
+
+  GetHstyFunding() {
+    return undefined;
+  },
+} satisfies Dex

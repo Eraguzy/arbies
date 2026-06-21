@@ -1,4 +1,8 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
+import { HTTPParams } from "@/app/api/req-params"
+import { AssetAndFdg, annualize8HourlyFunding } from "@/app/api/funding/utils"
+import type { Dex } from "@/lib/funding/dexes/arbies"
+import { NextRequest, NextResponse } from "next/server"
 
 // match Lighter pairs with the local registry ; they are mapped by ids on the api
 export const LighterPairRegistry: Record<string, AssetValues> = {
@@ -159,3 +163,59 @@ export const LighterPairRegistry: Record<string, AssetValues> = {
   "APT": ArbiesAssets.APT,
   "CHIP": ArbiesAssets.CHIP,
 }
+
+const LgtrApiUrl = "https://mainnet.zklighter.elliot.ai/api/v1";
+
+const LgtrApiUrlEndpoints = {
+  markets: "/markets",
+  fundings: "/fundings",
+  fundingRates: "/funding-rates",
+};
+
+type LighterFundingRate = {
+  exchange: string;
+  symbol: string;
+  rate: number;
+};
+
+export const LighterDex = {
+  Name: "Lighter",
+  PairRegistry: LighterPairRegistry,
+  ApiUrl: LgtrApiUrl,
+  ApiUrlEndpoints: LgtrApiUrlEndpoints,
+
+  async GetCurrentFunding(request: NextRequest) {
+    const { searchParams } = new URL(request.url);
+    const pairs = searchParams.get(HTTPParams.assets)?.split(",") || [];
+
+    const res = await fetch(
+      LgtrApiUrl + LgtrApiUrlEndpoints.fundingRates,
+      {
+        method: "GET",
+        headers: { accept: "application/json" },
+      }
+    );
+    const data = await res.json();
+    if (!data) {
+      return NextResponse.json({ error: "No data found" }, { status: 404 });
+    }
+
+    const assetsAndFundings: AssetAndFdg[] = data.funding_rates
+      .filter((universe: LighterFundingRate) =>
+        universe.exchange.toLowerCase() === LighterDex.Name.toLowerCase() &&
+        pairs.includes(LighterPairRegistry[universe.symbol])
+      )
+      .map((universe: LighterFundingRate) => {
+        return {
+          name: LighterPairRegistry[universe.symbol],
+          funding: annualize8HourlyFunding(universe.rate),
+        };
+      });
+
+    return NextResponse.json(assetsAndFundings);
+  },
+
+  GetHstyFunding() {
+    return undefined;
+  },
+} satisfies Dex

@@ -4,13 +4,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 import { FundingContext } from "../page";
-import { DexesPairsMapping, DexValues } from "@/lib/funding/dexes/arbies";
+import { DexName, AllDexes } from "@/lib/funding/dexes/arbies";
 import { AssetAndFdg } from "@/app/api/funding/utils";
 import { AssetValues } from "@/lib/funding/assets";
 import { FundingsCtx, DexesLoadingCtx } from "./table-fundings";
 
 type DexFunding = {
-  name: DexValues,
+  name: DexName,
   assetAndFdg: AssetAndFdg,
 }
 
@@ -66,7 +66,7 @@ export function ComparisonModeRows({ assets }: { assets: AssetValues[] }) {
             }
           </TableRow>
 
-          {Object.values(DexesPairsMapping[dex]).map((asset) => {
+          {Object.values(AllDexes[dex]?.PairRegistry || {}).map((asset) => {
             if (!assets.includes(asset)) { return null; } // only show rows for assets that are selected in the asset selector
 
             return (

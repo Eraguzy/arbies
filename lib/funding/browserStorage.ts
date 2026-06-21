@@ -1,4 +1,4 @@
-import { AllDexes, DexValues } from "@/lib/funding/dexes/arbies";
+import { AllDexes, DexName } from "@/lib/funding/dexes/arbies";
 import { AssetValues, ArbiesAssets } from "@/lib/funding/assets";
 
 export const storageKeys = {
@@ -14,7 +14,7 @@ export const canonicalAssetIndex = new Map(
 );
 
 // read either selected or compared dexes from local storage
-export function readStoredDexes(key: string, fallback: DexValues[]): DexValues[] {
+export function readStoredDexes(key: string, fallback: DexName[]): DexName[] {
   try {
     const raw = window.localStorage.getItem(key);
     if (!raw) return fallback;
@@ -23,8 +23,8 @@ export function readStoredDexes(key: string, fallback: DexValues[]): DexValues[]
     if (!Array.isArray(parsed)) return fallback;
 
     const dexes = parsed.filter(
-      (value): value is DexValues => typeof value === "string" &&
-        Object.values(AllDexes).includes(value as DexValues)
+      (value): value is DexName => typeof value === "string" &&
+        Object.keys(AllDexes).includes(value)
     );
     return dexes;
   } catch {

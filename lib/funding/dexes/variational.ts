@@ -1,4 +1,8 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
+import { HTTPParams } from "@/app/api/req-params"
+import { AssetAndFdg } from "@/app/api/funding/utils"
+import type { Dex } from "@/lib/funding/dexes/arbies"
+import { NextRequest, NextResponse } from "next/server"
 
 // match vari pairs with the local registry
 export const VariPairRegistry: Record<string, AssetValues> = {
@@ -196,3 +200,53 @@ export const VariPairRegistry: Record<string, AssetValues> = {
     "ZORA": ArbiesAssets.ZORA,
     "ZRO": ArbiesAssets.ZRO,
 }
+
+const VariApiUrl = "https://omni-client-api.prod.ap-northeast-1.variational.io";
+
+const VariApiUrlEndpoints = {
+    stats: "/metadata/stats",
+};
+
+type VariListing = {
+    ticker: string;
+    funding_rate: number;
+};
+
+export const VariDex = {
+    Name: "Variational",
+    PairRegistry: VariPairRegistry,
+    ApiUrl: VariApiUrl,
+    ApiUrlEndpoints: VariApiUrlEndpoints,
+
+    async GetCurrentFunding(request: NextRequest) {
+        const { searchParams } = new URL(request.url);
+        const pairs = searchParams.get(HTTPParams.assets)?.split(",") || [];
+
+        const res = await fetch(
+            VariApiUrl + VariApiUrlEndpoints.stats,
+            {
+                method: "GET",
+                headers: { accept: "application/json" },
+            }
+        );
+        const data = await res.json();
+        if (!data || !data.listings || data.listings.length === 0) {
+            return NextResponse.json({ error: "No data found" }, { status: 404 });
+        }
+
+        const assetsAndFundings: AssetAndFdg[] = data.listings
+            .filter((listing: VariListing) => pairs.includes(VariPairRegistry[listing.ticker]))
+            .map((universe: VariListing) => {
+                return {
+                    name: VariPairRegistry[universe.ticker],
+                    funding: universe.funding_rate * 100,
+                };
+            });
+
+        return NextResponse.json(assetsAndFundings);
+    },
+
+    GetHstyFunding() {
+        return undefined;
+    },
+} satisfies Dex

@@ -1,4 +1,8 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
+import { HTTPParams } from "@/app/api/req-params"
+import { AssetAndFdg, annualizeHourlyFunding } from "@/app/api/funding/utils"
+import type { Dex } from "@/lib/funding/dexes/arbies"
+import { NextRequest, NextResponse } from "next/server"
 
 // match pacifica pairs with the local registry
 export const PacificaPairRegistry: Record<string, AssetValues> = {
@@ -66,3 +70,56 @@ export const PacificaPairRegistry: Record<string, AssetValues> = {
     "ZK": ArbiesAssets.ZK,
     "ZRO": ArbiesAssets.ZRO,
 }
+
+const PacificaApiUrl = "https://api.pacifica.fi/api/v1";
+
+const PacificaApiUrlEndpoints = {
+    marketInfo: "/info",
+};
+
+type PacificaMarketInfo = {
+    symbol: string;
+    next_funding_rate: number;
+};
+
+export const PacificaDex = {
+    Name: "Pacifica",
+    PairRegistry: PacificaPairRegistry,
+    ApiUrl: PacificaApiUrl,
+    ApiUrlEndpoints: PacificaApiUrlEndpoints,
+
+    async GetCurrentFunding(request: NextRequest) {
+        const { searchParams } = new URL(request.url);
+        const pairs = searchParams.get(HTTPParams.assets)?.split(",") || [];
+
+        const res = await fetch(
+            PacificaApiUrl + PacificaApiUrlEndpoints.marketInfo,
+            {
+                method: "GET",
+                headers: { accept: "application/json" },
+            }
+        );
+        const data = await res.json();
+        if (!data || !data.data || data.data.length === 0) {
+            return NextResponse.json({ error: "No data found" }, { status: 404 });
+        }
+        if (!data.success) {
+            return NextResponse.json({ error: "Error fetching data from Pacifica" }, { status: 500 });
+        }
+
+        const assetsAndFundings: AssetAndFdg[] = data.data
+            .filter((listing: PacificaMarketInfo) => pairs.includes(PacificaPairRegistry[listing.symbol]))
+            .map((universe: PacificaMarketInfo) => {
+                return {
+                    name: PacificaPairRegistry[universe.symbol],
+                    funding: annualizeHourlyFunding(universe.next_funding_rate),
+                };
+            });
+
+        return NextResponse.json(assetsAndFundings);
+    },
+
+    GetHstyFunding() {
+        return undefined;
+    },
+} satisfies Dex

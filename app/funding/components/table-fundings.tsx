@@ -4,21 +4,21 @@ import { Table, TableCaption, TableHeader, TableRow, TableHead, TableBody } from
 import { FundingContext } from "../page";
 import { fetchoor } from "./fetchoor";
 import { readStoredAssets, writeStoredAssets } from "../../../lib/funding/browserStorage";
-import { DexValues } from "@/lib/funding/dexes/arbies";
+import { DexName } from "@/lib/funding/dexes/arbies";
 import { AssetAndFdg } from "@/app/api/funding/utils";
 import { AssetValues } from "@/lib/funding/assets";
 import AssetSelector from "@/components/selectors/assets";
 import { ComparisonModeRows } from "./comparison-module";
 import { FundingModeRows } from "./funding-module";
 
-export const FundingsCtx = createContext({} as Record<DexValues, AssetAndFdg[]>);
-export const DexesLoadingCtx = createContext({} as Record<DexValues, boolean>);
+export const FundingsCtx = createContext({} as Record<DexName, AssetAndFdg[]>);
+export const DexesLoadingCtx = createContext({} as Record<DexName, boolean>);
 
 export default function TableFundings() {
   const { selected, comparisonMode } = useContext(FundingContext);
   const [assets, setAssets] = useState<AssetValues[]>(() => readStoredAssets());
-  const [fundingsPerDex, setFundingsPerDex] = useState<Record<DexValues, AssetAndFdg[]>>({} as Record<DexValues, AssetAndFdg[]>);
-  const [isDexLoading, setIsDexLoading] = useState<Record<DexValues, boolean>>({} as Record<DexValues, boolean>);
+  const [fundingsPerDex, setFundingsPerDex] = useState<Record<DexName, AssetAndFdg[]>>({} as Record<DexName, AssetAndFdg[]>);
+  const [isDexLoading, setIsDexLoading] = useState<Record<DexName, boolean>>({} as Record<DexName, boolean>);
 
   useEffect(() => {
     writeStoredAssets(assets);

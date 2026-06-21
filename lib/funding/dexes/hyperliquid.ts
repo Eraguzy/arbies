@@ -1,4 +1,8 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
+import { HTTPParams } from "@/app/api/req-params"
+import { AssetAndFdg, annualizeHourlyFunding } from "@/app/api/funding/utils"
+import type { Dex } from "@/lib/funding/dexes/arbies"
+import { NextRequest, NextResponse } from "next/server"
 
 // match HL pairs with the local registry 
 export const HLPairRegistry: Record<string, AssetValues> = {
@@ -233,3 +237,55 @@ export const HLPairRegistry: Record<string, AssetValues> = {
   "AZTEC": ArbiesAssets.AZTEC,
   "CHIP": ArbiesAssets.CHIP,
 }
+
+const HLApiUrl = "https://api.hyperliquid.xyz/info";
+
+const HLApiUrlEndpoints = {};
+
+type HLUniverse = {
+  name: string;
+};
+
+export const HLDex = {
+  Name: "Hyperliquid",
+  PairRegistry: HLPairRegistry,
+  ApiUrl: HLApiUrl,
+  ApiUrlEndpoints: HLApiUrlEndpoints,
+
+  async GetCurrentFunding(request: NextRequest) {
+    const { searchParams } = new URL(request.url);
+    const pairs = searchParams.get(HTTPParams.assets)?.split(",") || [];
+
+    const res = await fetch(
+      HLApiUrl,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "metaAndAssetCtxs",
+          dex: "",
+        }),
+      }
+    );
+    const data = await res.json();
+    if (!data || !data[0] || !data[1]) {
+      return NextResponse.json({ error: "No data found" }, { status: 404 });
+    }
+
+    const assetsAndFundings: AssetAndFdg[] = data[0].universe.map(
+      (universe: HLUniverse, index: number) => {
+        return {
+          name: HLPairRegistry[universe.name],
+          funding: annualizeHourlyFunding(data[1][index].funding),
+        };
+      });
+
+    return NextResponse.json(assetsAndFundings.filter((asset) => pairs.includes(asset.name)));
+  },
+
+  GetHstyFunding() {
+    return undefined;
+  },
+} satisfies Dex

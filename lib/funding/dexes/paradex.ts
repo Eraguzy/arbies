@@ -1,4 +1,8 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
+import { HTTPParams } from "@/app/api/req-params"
+import { AssetAndFdg, annualize8HourlyFunding } from "@/app/api/funding/utils"
+import type { Dex } from "@/lib/funding/dexes/arbies"
+import { NextRequest, NextResponse } from "next/server"
 
 // match paradex pairs with the local registry ; they are mapped by ids on the api
 export const ParadexPairRegistry: Record<string, AssetValues> = {
@@ -90,5 +94,50 @@ export const ParadexPairRegistry: Record<string, AssetValues> = {
 
 // find key from value, return first elem
 export function getParadexPair(asset: AssetValues): string | undefined {
-  return Object.entries(ParadexPairRegistry).find(([_, value]) => value === asset)?.[0]
+  return Object.entries(ParadexPairRegistry).find((entry) => entry[1] === asset)?.[0]
 }
+
+const ParadexApiUrl = "https://api.prod.paradex.trade/v1";
+
+const ParadexApiUrlEndpoints = {
+  funding: "/funding/data",
+};
+
+export const ParadexDex = {
+  Name: "Paradex",
+  PairRegistry: ParadexPairRegistry,
+  ApiUrl: ParadexApiUrl,
+  ApiUrlEndpoints: ParadexApiUrlEndpoints,
+
+  async GetCurrentFunding(request: NextRequest) {
+    const { searchParams } = new URL(request.url);
+    const pairs: AssetValues[] = searchParams.get(HTTPParams.assets)?.split(",") as AssetValues[] || [];
+
+    const settled = await Promise.allSettled(
+      pairs.map(async (pair) => {
+        const res = await fetch(
+          ParadexApiUrl + ParadexApiUrlEndpoints.funding + "?market=" + getParadexPair(pair),
+          { method: "GET", headers: { accept: "application/json" } }
+        );
+        const data = await res.json();
+        if (!data?.results?.length) return null;
+
+        return {
+          name: pair,
+          funding: annualize8HourlyFunding(data.results[0].funding_rate),
+        } satisfies AssetAndFdg;
+      })
+    );
+
+    const assetsAndFundings = settled
+      .filter((r): r is PromiseFulfilledResult<AssetAndFdg | null> => r.status === "fulfilled")
+      .map(r => r.value)
+      .filter((v): v is AssetAndFdg => v !== null);
+
+    return NextResponse.json(assetsAndFundings);
+  },
+
+  GetHstyFunding() {
+    return undefined;
+  },
+} satisfies Dex

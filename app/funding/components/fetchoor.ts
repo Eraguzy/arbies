@@ -1,18 +1,17 @@
-import { DexValues } from "@/lib/funding/dexes/arbies";
-import { AllDexes } from "@/lib/funding/dexes/arbies";
+import { DexName } from "@/lib/funding/dexes/arbies";
 import { HTTPParams } from "@/app/api/req-params";
 import { AssetValues } from "@/lib/funding/assets";
 import { AssetAndFdg } from "@/app/api/funding/utils";
 
 export function fetchoor(
-  dexList: Set<DexValues>,
+  dexList: Set<DexName>,
   assets: Set<AssetValues>,
-  setFundingsPerDex: React.Dispatch<React.SetStateAction<Record<DexValues, AssetAndFdg[]>>>,
-  setIsDexLoading: React.Dispatch<React.SetStateAction<Record<DexValues, boolean>>>
+  setFundingsPerDex: React.Dispatch<React.SetStateAction<Record<DexName, AssetAndFdg[]>>>,
+  setIsDexLoading: React.Dispatch<React.SetStateAction<Record<DexName, boolean>>>
 ) {
   const assetsParam = Array.from(assets).join(',');
 
-  const fetchDexFunding = (dex: DexValues, endpoint: string) => {
+  const fetchDexFunding = (dex: DexName, endpoint: string) => {
     setIsDexLoading(prev => ({ ...prev, [dex]: true }));
 
     fetch(endpoint + '?' + HTTPParams.assets + '=' + assetsParam)
