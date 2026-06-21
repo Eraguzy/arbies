@@ -1,0 +1,9 @@
+- When asked a question, except if the user explicitly asks for a change, then only answer to the question. 
+- Only make the requested change.
+- Do not perform any unrequested refactoring.
+- Do not reformat unrelated files.
+- Do not fix unrelated bugs.
+- Do not rename anything.
+- Do not modify dependencies, configuration files, tests, or files not explicitly mentioned without asking first.
+- If a change outside the requested scope seems necessary, stop and ask for confirmation.
+- At the end, list exactly which files were modified and why.
