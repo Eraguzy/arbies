@@ -31,45 +31,6 @@ export function fetchoor(
   };
 
   for (const dex of dexList) {
-    switch (dex) {
-      case AllDexes.Hyperliquid:
-        fetchDexFunding(dex, '/api/funding/hyperliquid/funding');
-        break;
-
-      case AllDexes.Lighter:
-        fetchDexFunding(dex, '/api/funding/lighter/funding');
-        break;
-
-      case AllDexes.QFEX:
-        fetchDexFunding(dex, '/api/funding/qfex/funding');
-        break;
-
-      case AllDexes.Extended:
-        fetchDexFunding(dex, '/api/funding/extended/funding');
-        break;
-
-      case AllDexes.Variational:
-        fetchDexFunding(dex, '/api/funding/variational/funding');
-        break;
-
-      case AllDexes.Pacifica:
-        fetchDexFunding(dex, '/api/funding/pacifica/funding');
-        break;
-
-      case AllDexes.Ethereal:
-        fetchDexFunding(dex, '/api/funding/ethereal/funding');
-        break;
-
-      case AllDexes.Paradex:
-        fetchDexFunding(dex, '/api/funding/paradex/funding');
-        break;
-
-      case AllDexes["01"]:
-        fetchDexFunding(dex, '/api/funding/01/funding');
-        break;
-
-      default:
-        console.error('Unknown dex:', dex);
-    }
+    fetchDexFunding(dex, '/api/funding/' + dex.toLowerCase() + '/funding');
   }
 }

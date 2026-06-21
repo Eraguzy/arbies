@@ -32,7 +32,7 @@ export default function TableFundings() {
     }, 60000); // fetch every minute
 
     return () => clearInterval(interval); // cleanup 
-  }, [assets]);
+  }, [assets, selected]);
 
   return (
     <Table>
