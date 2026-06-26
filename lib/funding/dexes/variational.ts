@@ -207,7 +207,7 @@ const VariApiUrlEndpoints = {
     stats: "/metadata/stats",
 };
 
-type VariListing = {
+type VariData = {
     ticker: string;
     funding_rate: number;
 };
@@ -235,8 +235,8 @@ export const VariDex = {
         }
 
         const assetsAndFundings: AssetAndFdg[] = data.listings
-            .filter((listing: VariListing) => pairs.includes(VariPairRegistry[listing.ticker]))
-            .map((universe: VariListing) => {
+            .filter((listing: VariData) => pairs.includes(VariPairRegistry[listing.ticker]))
+            .map((universe: VariData) => {
                 return {
                     name: VariPairRegistry[universe.ticker],
                     funding: universe.funding_rate * 100,

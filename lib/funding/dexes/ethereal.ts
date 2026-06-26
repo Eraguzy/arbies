@@ -30,7 +30,7 @@ const EtherealApiUrlEndpoints = {
   projectedFunding: "/funding/projected-rate",
 };
 
-type EtherealProjectedFunding = {
+type EtherealData = {
   productId: string;
   fundingRateProjected1h: number;
 };
@@ -83,8 +83,8 @@ export const EtherealDex = {
     }
 
     const assetsAndFundings: AssetAndFdg[] = data.data
-      .filter((listing: EtherealProjectedFunding) => pairs.includes(EtherealPairRegistry[idsAndTickers.get(listing.productId)!]))
-      .map((universe: EtherealProjectedFunding) => {
+      .filter((listing: EtherealData) => pairs.includes(EtherealPairRegistry[idsAndTickers.get(listing.productId)!]))
+      .map((universe: EtherealData) => {
         if (!idsAndTickers.has(universe.productId)) {
           return null;
         }

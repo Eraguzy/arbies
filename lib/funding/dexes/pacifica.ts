@@ -77,7 +77,7 @@ const PacificaApiUrlEndpoints = {
     marketInfo: "/info",
 };
 
-type PacificaMarketInfo = {
+type PacificaData = {
     symbol: string;
     next_funding_rate: number;
 };
@@ -108,8 +108,8 @@ export const PacificaDex = {
         }
 
         const assetsAndFundings: AssetAndFdg[] = data.data
-            .filter((listing: PacificaMarketInfo) => pairs.includes(PacificaPairRegistry[listing.symbol]))
-            .map((universe: PacificaMarketInfo) => {
+            .filter((listing: PacificaData) => pairs.includes(PacificaPairRegistry[listing.symbol]))
+            .map((universe: PacificaData) => {
                 return {
                     name: PacificaPairRegistry[universe.symbol],
                     funding: annualizeHourlyFunding(universe.next_funding_rate),

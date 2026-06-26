@@ -128,7 +128,7 @@ const ExtndApiUrlEndpoints = {
   fundingRates: "/funding-rates",
 };
 
-type ExtndMarket = {
+type ExtndData = {
   name: string;
   marketStats: {
     fundingRate: number;
@@ -173,7 +173,7 @@ export const ExtndDex = {
       return NextResponse.json({ error: "No data found" }, { status: 404 });
     }
 
-    const assetsAndFundings: AssetAndFdg[] = data.data.map((universe: ExtndMarket) => {
+    const assetsAndFundings: AssetAndFdg[] = data.data.map((universe: ExtndData) => {
       return {
         name: ExtndPairRegistry[universe.name],
         funding: annualizeHourlyFunding(universe.marketStats.fundingRate),

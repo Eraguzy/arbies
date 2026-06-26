@@ -242,7 +242,7 @@ const HLApiUrl = "https://api.hyperliquid.xyz/info";
 
 const HLApiUrlEndpoints = {};
 
-type HLUniverse = {
+type HLData = {
   name: string;
 };
 
@@ -275,7 +275,7 @@ export const HLDex = {
     }
 
     const assetsAndFundings: AssetAndFdg[] = data[0].universe.map(
-      (universe: HLUniverse, index: number) => {
+      (universe: HLData, index: number) => {
         return {
           name: HLPairRegistry[universe.name],
           funding: annualizeHourlyFunding(data[1][index].funding),

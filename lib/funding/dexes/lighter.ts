@@ -172,7 +172,7 @@ const LgtrApiUrlEndpoints = {
   fundingRates: "/funding-rates",
 };
 
-type LighterFundingRate = {
+type LighterData = {
   exchange: string;
   symbol: string;
   rate: number;
@@ -201,11 +201,11 @@ export const LighterDex = {
     }
 
     const assetsAndFundings: AssetAndFdg[] = data.funding_rates
-      .filter((universe: LighterFundingRate) =>
+      .filter((universe: LighterData) =>
         universe.exchange.toLowerCase() === LighterDex.Name.toLowerCase() &&
         pairs.includes(LighterPairRegistry[universe.symbol])
       )
-      .map((universe: LighterFundingRate) => {
+      .map((universe: LighterData) => {
         return {
           name: LighterPairRegistry[universe.symbol],
           funding: annualize8HourlyFunding(universe.rate),

@@ -1,5 +1,5 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
-import { AssetAndFdg } from "@/app/api/funding/utils"
+import { annualizeExactHourlyFunding, AssetAndFdg } from "@/app/api/funding/utils"
 import type { Dex } from "@/lib/funding/dexes/arbies"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -34,12 +34,13 @@ export const QFEXPairRegistry: Record<string, AssetValues> = {
   "URANIUM-USD": ArbiesAssets.URA,
   "US100-USD": ArbiesAssets.NASDAQ,
   "US500-USD": ArbiesAssets.SP500,
+  "MU-USD": ArbiesAssets.MU,
 }
 
 const QfexApiUrl = "https://api.qfex.com";
 
 const QfexApiUrlEndpoints = {
-  symbolsMetrics: "/symbols/metrics",
+  mdContracts: "/md/contracts",
   fundingHsty: "/funding",
 };
 
@@ -53,12 +54,10 @@ export const QFEXDex = {
     void request;
 
     const res = await fetch(
-      QfexApiUrl + QfexApiUrlEndpoints.symbolsMetrics,
-      {
-        method: "GET",
-        headers: { accept: "application/json" },
-      }
+      QfexApiUrl + QfexApiUrlEndpoints.mdContracts,
+      { method: "GET", headers: { accept: "application/json" } },
     );
+
     const data = await res.json();
     if (!data || !data.data) {
       return NextResponse.json({ error: "No data found" }, { status: 404 });
@@ -66,14 +65,13 @@ export const QFEXDex = {
 
     const fundingData: AssetAndFdg[] = [];
     for (const pairData of data.data) {
-      if (QFEXPairRegistry[pairData.symbol]) {
+      if (QFEXPairRegistry[pairData.ticker_id]) {
         fundingData.push({
-          name: QFEXPairRegistry[pairData.symbol],
-          funding: pairData.funding_rate_bps * 100,
+          name: QFEXPairRegistry[pairData.ticker_id],
+          funding: annualizeExactHourlyFunding(pairData.next_funding_rate),
         });
       }
     }
-
     return NextResponse.json(fundingData);
   },
 
@@ -81,4 +79,3 @@ export const QFEXDex = {
     return undefined;
   },
 } satisfies Dex
-

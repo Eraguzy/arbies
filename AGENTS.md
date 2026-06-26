@@ -1,5 +1,5 @@
 - When asked a question, except if the user explicitly asks for a change, then only answer to the question. 
-- Only make the requested change.
+- Only make the requested change. Do NOT try to go beyond. Stop precisely where the user asked you to do things. Do not try to interprete : the user knows better than you what he needs.
 - Do not perform any unrequested refactoring.
 - Do not reformat unrelated files.
 - Do not fix unrelated bugs.
