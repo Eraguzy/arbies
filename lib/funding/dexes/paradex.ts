@@ -3,6 +3,7 @@ import { HTTPParams } from "@/app/api/req-params"
 import { AssetAndFdg, annualize8HourlyFunding } from "@/app/api/funding/utils"
 import type { Dex } from "@/lib/funding/dexes/arbies"
 import { NextRequest, NextResponse } from "next/server"
+import { wait } from "@/lib/funding/misc"
 
 // match paradex pairs with the local registry ; they are mapped by ids on the api
 export const ParadexPairRegistry: Record<string, AssetValues> = {
@@ -103,6 +104,8 @@ const ParadexApiUrlEndpoints = {
   funding: "/funding/data",
 };
 
+const ParadexApiRatePerSec = 120
+
 export const ParadexDex = {
   Name: "Paradex",
   PairRegistry: ParadexPairRegistry,
@@ -111,23 +114,37 @@ export const ParadexDex = {
 
   async GetCurrentFunding(request: NextRequest) {
     const { searchParams } = new URL(request.url);
-    const pairs: AssetValues[] = searchParams.get(HTTPParams.assets)?.split(",") as AssetValues[] || [];
+    const pairs: AssetValues[] = searchParams
+      .get(HTTPParams.assets)
+      ?.split(",")
+      .map((p: string) => getParadexPair(p as AssetValues))
+      .filter((v): v is AssetValues => !!v) || [];
 
-    const settled = await Promise.allSettled(
-      pairs.map(async (pair) => {
-        const res = await fetch(
-          ParadexApiUrl + ParadexApiUrlEndpoints.funding + "?market=" + getParadexPair(pair),
-          { method: "GET", headers: { accept: "application/json" } }
-        );
-        const data = await res.json();
-        if (!data?.results?.length) return null;
+    // paradex rate limit : 120 req/s
+    const settled: PromiseSettledResult<AssetAndFdg | null>[] = [];
+    for (let i = 0; i < pairs.length; i += ParadexApiRatePerSec) {
 
-        return {
-          name: pair,
-          funding: annualize8HourlyFunding(data.results[0].funding_rate),
-        } satisfies AssetAndFdg;
-      })
-    );
+      const start = performance.now();
+      settled.push(...await Promise.allSettled(
+        pairs.slice(i, i + ParadexApiRatePerSec).map(async (pair) => {
+          return fetch(
+            ParadexApiUrl + ParadexApiUrlEndpoints.funding + "?market=" + pair,
+            { method: "GET", headers: { accept: "application/json" } }
+          ).then((res) => res.json())
+            .then((data) => {
+              if (!data?.results?.length) return null;
+
+              return {
+                name: ParadexPairRegistry[pair],
+                funding: annualize8HourlyFunding(data.results[0].funding_rate),
+              } satisfies AssetAndFdg;
+            });
+        })
+      ));
+
+      if (i + ParadexApiRatePerSec < pairs.length)
+        await wait(Math.max(0, 1000 - (performance.now() - start)));
+    }
 
     const assetsAndFundings = settled
       .filter((r): r is PromiseFulfilledResult<AssetAndFdg | null> => r.status === "fulfilled")

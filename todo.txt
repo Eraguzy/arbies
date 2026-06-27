@@ -1,3 +1,2 @@
 -some ai to track new listings?
--manage 01/paradex batches
 -add history

@@ -5,6 +5,7 @@ import type { Dex } from "@/lib/funding/dexes/arbies"
 import { HTTPParams } from '@/app/api/req-params';
 import { AssetAndFdg } from "@/app/api/funding/utils"
 import { annualizeHourlyFunding } from '@/app/api/funding/utils';
+import { wait } from '@/lib/funding/misc';
 
 // match 01 pairs with the local registry ; they are mapped by ids on the api
 const ZoPairRegistry: Record<string, AssetValues> = {
@@ -40,6 +41,8 @@ const ZoApiUrlEndpoints = {
 	info: "/info", // contains ticker, id
 	stats: (id: number) => `/market/${id}/stats`, // contains funding rate
 }
+
+const ZoApiRatePerSec = 100; // hypothetic, undocumented
 
 // get Zo ids based on the local pairs
 // return format: [{ id: '0', ticker: 'BTCUSD' }, ...]
