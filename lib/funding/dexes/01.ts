@@ -42,30 +42,48 @@ const ZoApiUrlEndpoints = {
 	stats: (id: number) => `/market/${id}/stats`, // contains funding rate
 }
 
+// api req throttling, supposedly 100 req/sec
 const ZoApiRatePerSec = 100; // hypothetic, undocumented
+const ZoApiRateMs = 1000;
+const ZoFetchTimestamps: number[] = [];
+async function ZoFetchoor(url: string, options: RequestInit) {
+	while (true) {
+		const now = Date.now();
+
+		while (ZoFetchTimestamps.length > 0 && ZoFetchTimestamps[0] <= now - ZoApiRateMs) { // clean old timestamps
+			ZoFetchTimestamps.shift();
+		}
+
+		if (ZoFetchTimestamps.length < ZoApiRatePerSec) { // if under rate limit, fetch
+			ZoFetchTimestamps.push(now);
+			return fetch(url, options);
+		}
+
+		await wait(ZoApiRateMs - (now - ZoFetchTimestamps[0])); // wait until oldest is out rate limit window
+	}
+}
 
 // get Zo ids based on the local pairs
 // return format: [{ id: '0', ticker: 'BTCUSD' }, ...]
 async function getIdsAndTickers(assets: AssetValues[]): Promise<Map<number, keyof typeof ZoPairRegistry>> {
-	const res = await fetch(
+	return ZoFetchoor(
 		ZoApiUrl + ZoApiUrlEndpoints.info,
-		{
-			method: 'GET',
-			// headers: { accept: 'application/json' },
-		}
-	);
-	const data = await res.json();
-	if (!data || !data.markets || data.markets.length === 0) {
-		return new Map();
-	}
+		{ method: 'GET',	/* headers: { accept: 'application/json' },*/ },
+	).then(res => res.json())
+		.then(data => {
+			if (!data || !data.markets || data.markets.length === 0) {
+				return new Map();
+			}
 
-	const ids: Map<number, keyof typeof ZoPairRegistry> = new Map();
-	for (const listing of data.markets) {
-		if (assets.includes(ZoPairRegistry[listing.symbol])) {
-			ids.set(listing.marketId, listing.symbol);
-		}
-	}
-	return ids;
+			const ids: Map<number, keyof typeof ZoPairRegistry> = new Map();
+			for (const listing of data.markets) {
+				if (assets.includes(ZoPairRegistry[listing.symbol])) {
+					ids.set(listing.marketId, listing.symbol);
+				}
+			}
+
+			return ids;
+		});
 }
 
 export const ZoDex = {
@@ -84,16 +102,18 @@ export const ZoDex = {
 		const idsAndTickers = await getIdsAndTickers(pairs);
 		const settled = await Promise.allSettled(
 			Array.from(idsAndTickers.entries()).map(
-				async ([id, ticker]) => {
-					const res = await fetch(ZoApiUrl + ZoApiUrlEndpoints.stats(id), { method: 'GET' });
-					const data = await res.json();
-					if (!data?.perpStats?.funding_rate) return null;
+				([id, ticker]) => ZoFetchoor(
+					ZoApiUrl + ZoApiUrlEndpoints.stats(id),
+					{ method: 'GET' }
+				).then(res => res.json())
+					.then(data => {
+						if (!data?.perpStats?.funding_rate) return null;
 
-					return {
-						name: ZoPairRegistry[ticker], // get the local ticker name from id
-						funding: annualizeHourlyFunding(data.perpStats.funding_rate), // it's already annualized as a rate in api
-					} satisfies AssetAndFdg;
-				}
+						return {
+							name: ZoPairRegistry[ticker], // get the local ticker name from id
+							funding: annualizeHourlyFunding(data.perpStats.funding_rate), // it's already annualized as a rate in api
+						} satisfies AssetAndFdg;
+					})
 			)
 		);
 
