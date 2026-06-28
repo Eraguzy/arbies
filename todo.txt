@@ -1,2 +1,19 @@
 -some ai to track new listings?
+workflow:
+>have a github action running every week or sum
+    =>write down the action
+>get pairs list from api for every dex
+    => write the getters
+>search with regex. if matches found in arbies registry: 
+    >treat with regex (ie 'sndk-usd' matches with with local 'sndk')
+        => write regex
+>else if irregularities found:
+    >use ai with a msg on telegram
+        -can update either the arbies list if missing
+        -or/and propose a decision based on his logic on
+        => add env keys openai, telegram chat, telegram bot, github token
+        => telegram msg sendoor
+        => find out how i reach the model
+
+*ignore*
 -add history
