@@ -7,10 +7,10 @@ import { NextRequest, NextResponse } from "next/server"
 // match vari pairs with the local registry
 export const VariPairRegistry: Record<string, AssetValues> = {
     "0G": ArbiesAssets["0G"],
-    "1000000MOG": ArbiesAssets["1000000MOG"],
-    "1000BONK": ArbiesAssets["1000BONK"],
-    "1000FLOKI": ArbiesAssets["1000FLOKI"],
-    "1000PEPE": ArbiesAssets["1000PEPE"],
+    "1000000MOG": ArbiesAssets.MOG,
+    "1000BONK": ArbiesAssets.BONK,
+    "1000FLOKI": ArbiesAssets.FLOKI,
+    "1000PEPE": ArbiesAssets.PEPE,
     "2Z": ArbiesAssets["2Z"],
     "4": ArbiesAssets["4"],
     "AAVE": ArbiesAssets.AAVE,
