@@ -11,6 +11,7 @@ import { PacificaDex } from "./pacifica"
 import { ParadexDex } from "./paradex"
 import { QFEXDex } from "./qfex"
 import { VariDex } from "./variational"
+import { RisexDex } from "./risex";
 
 export type DexName =
   | "Hyperliquid"
@@ -21,7 +22,8 @@ export type DexName =
   | "Pacifica"
   | "Ethereal"
   | "Paradex"
-  | "01";
+  | "01"
+  | "RISEx";
 
 export type ApiUrlEndpoints = Record<
   string,
@@ -50,4 +52,5 @@ export const AllDexes: Record<DexName, Dex> = {
   [EtherealDex.Name]: EtherealDex,
   [ParadexDex.Name]: ParadexDex,
   [ZoDex.Name]: ZoDex,
+  [RisexDex.Name]: RisexDex,
 };

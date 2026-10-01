@@ -273,12 +273,14 @@ export const ArbiesAssets = {
   CRCL: "CRCL",
   CRWV: "CRWV",
   DIA: "DIA",
+  DRAM: "DRAM",
   GD: "GD",
   GOOGL: "GOOGL",
   HOOD: "HOOD",
   HYUNDAI: "HYUNDAI",
   INTC: "INTC",
   IWM: "IWM",
+  KORU: "KORU",
   LMT: "LMT",
   MAGS: "MAGS",
   META: "META",
@@ -296,6 +298,7 @@ export const ArbiesAssets = {
   SKHYNIX: "SKHYNIX",
   SNDK: "SNDK",
   SP500: "SPY500",
+  SPCX: "SPCX",
   TSLA: "TSLA",
 
   // commodities
