@@ -7,9 +7,19 @@ export function fetchoor(
   dexList: Set<DexName>,
   assets: Set<AssetValues>,
   setFundingsPerDex: React.Dispatch<React.SetStateAction<Record<DexName, AssetAndFdg[]>>>,
-  setIsDexLoading: React.Dispatch<React.SetStateAction<Record<DexName, boolean>>>
+  setIsDexLoading: React.Dispatch<React.SetStateAction<Record<DexName, boolean>>>,
+  setIsDexFirstLoad: React.Dispatch<React.SetStateAction<Record<DexName, boolean>>>
 ) {
   const assetsParam = Array.from(assets).join(',');
+
+  // filter out dexes removed from dexlist
+  setIsDexFirstLoad(prev => {
+    const kept = Object.fromEntries(
+      Object.entries(prev).filter(([dex]) => dexList.has(dex as DexName))
+    ) as Record<DexName, boolean>;
+
+    return Object.keys(kept).length === Object.keys(prev).length ? prev : kept;
+  });
 
   const fetchDexFunding = (dex: DexName, endpoint: string) => {
     setIsDexLoading(prev => ({ ...prev, [dex]: true }));
@@ -26,6 +36,7 @@ export function fetchoor(
       .catch(err => console.error(err))
       .finally(() => {
         setIsDexLoading(prev => ({ ...prev, [dex]: false }));
+        setIsDexFirstLoad(prev => ({ ...prev, [dex]: false }));
       });
   };
 

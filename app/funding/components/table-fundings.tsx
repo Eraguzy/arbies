@@ -19,20 +19,40 @@ export default function TableFundings() {
   const [assets, setAssets] = useState<AssetValues[]>(() => readStoredAssets());
   const [fundingsPerDex, setFundingsPerDex] = useState<Record<DexName, AssetAndFdg[]>>({} as Record<DexName, AssetAndFdg[]>);
   const [isDexLoading, setIsDexLoading] = useState<Record<DexName, boolean>>({} as Record<DexName, boolean>);
+  const [isDexFirstLoad, setIsDexFirstLoad] = useState<Record<DexName, boolean>>({} as Record<DexName, boolean>); // skeletons only show on 1st dex load
 
   useEffect(() => {
     writeStoredAssets(assets);
 
     if (!assets.length) return;
 
-    fetchoor(new Set(selected), new Set(assets), setFundingsPerDex, setIsDexLoading); // immediate call
+    fetchoor(
+      new Set(selected),
+      new Set(assets),
+      setFundingsPerDex,
+      setIsDexLoading,
+      setIsDexFirstLoad
+    ); // immediate call
 
     const interval = setInterval(() => {
-      fetchoor(new Set(selected), new Set(assets), setFundingsPerDex, setIsDexLoading);
+      fetchoor(
+        new Set(selected),
+        new Set(assets),
+        setFundingsPerDex,
+        setIsDexLoading,
+        setIsDexFirstLoad
+      );
     }, 60000); // fetch every minute
 
     return () => clearInterval(interval); // cleanup 
   }, [assets, selected]);
+
+  const showSkeletonPerDex = Object.fromEntries(
+    Object.entries(isDexLoading).map(
+      // three isDexFirstLoad states: already loaded (false), 1st load (true), not yet loaded (undefined)
+      ([dex, isLoading]) => [dex, isLoading && (isDexFirstLoad[dex as DexName] ?? true)]
+    )
+  ) as Record<DexName, boolean>;
 
   return (
     <Table>
@@ -60,7 +80,7 @@ export default function TableFundings() {
       </TableHeader>
 
       <FundingsCtx value={fundingsPerDex}>
-        <DexesLoadingCtx value={isDexLoading}>
+        <DexesLoadingCtx value={showSkeletonPerDex}>
           <TableBody>
             {comparisonMode ? (
               <ComparisonModeRows assets={assets} />
