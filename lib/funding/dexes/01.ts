@@ -33,6 +33,22 @@ const ZoPairRegistry: Record<string, AssetValues> = {
 	"ASTERUSD": ArbiesAssets.ASTER,
 	"PAXGUSD": ArbiesAssets.PAXG,
 	"LITUSD": ArbiesAssets.LIT,
+	"PUMPUSD": ArbiesAssets.PUMP,
+	"WLDUSD": ArbiesAssets.WLD,
+	"TAOUSD": ArbiesAssets.TAO,
+	"DOGEUSD": ArbiesAssets.DOGE,
+	"BNBUSD": ArbiesAssets.BNB,
+	"UNIUSD": ArbiesAssets.UNI,
+	"ONDOUSD": ArbiesAssets.ONDO,
+	"PENGUUSD": ArbiesAssets.PENGU,
+	"kPEPEUSD": ArbiesAssets.PEPE,
+	"FARTCOINUSD": ArbiesAssets.FARTCOIN,
+	"MONUSD": ArbiesAssets.MON,
+	"VVVUSD": ArbiesAssets.VVV,
+	"ZROUSD": ArbiesAssets.ZRO,
+	"MORPHOUSD": ArbiesAssets.MORPHO,
+	"AEROUSD": ArbiesAssets.AERO,
+	"XMRUSD": ArbiesAssets.XMR,
 }
 
 const ZoApiUrl = "https://zo-mainnet.n1.xyz";

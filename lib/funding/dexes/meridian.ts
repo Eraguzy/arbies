@@ -17,8 +17,8 @@ export const MeridianPairRegistry: Record<string, AssetValues> = {
   "VVVUSD": ArbiesAssets.VVV,
   "XAUXAUUSD": ArbiesAssets.XAU,
   "XAGXAGUSD": ArbiesAssets.XAG,
-  "SPYSPYUSD": ArbiesAssets.SP500,
-  "QQQQQQUSD": ArbiesAssets.NASDAQ,
+  "SPYSPYUSD": ArbiesAssets.SPY500,
+  "QQQQQQUSD": ArbiesAssets.QQQ,
 }
 
 const MeridianApiUrl = "https://api.meridian.xyz/v1";

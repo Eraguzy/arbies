@@ -30,8 +30,8 @@ export const RisexPairRegistry: Record<string, AssetValues> = {
 	"PUMP/USDC": ArbiesAssets.PUMP,
 	"DRAM/USDC": ArbiesAssets.DRAM,
 	"MU/USDC": ArbiesAssets.MU,
-	"QQQ/USDC": ArbiesAssets.NASDAQ,
-	"SPY/USDC": ArbiesAssets.SP500,
+	"QQQ/USDC": ArbiesAssets.QQQ,
+	"SPY/USDC": ArbiesAssets.SPY500,
 	"INTC/USDC": ArbiesAssets.INTC,
 	"MSTR/USDC": ArbiesAssets.MSTR,
 	"KORU/USDC": ArbiesAssets.KORU,
@@ -41,6 +41,16 @@ export const RisexPairRegistry: Record<string, AssetValues> = {
 	"HOOD/USDC": ArbiesAssets.HOOD,
 	"SKHYNIX/USDC": ArbiesAssets.SKHYNIX,
 	"NVDA/USDC": ArbiesAssets.NVDA,
+	"META/USDC": ArbiesAssets.META,
+	"ENA/USDC": ArbiesAssets.ENA,
+	"SOXL/USDC": ArbiesAssets.SOXL,
+	"MON/USDC": ArbiesAssets.MON,
+	"WLD/USDC": ArbiesAssets.WLD,
+	"GOOGL/USDC": ArbiesAssets.GOOGL,
+	"STRK/USDC": ArbiesAssets.STRK,
+	"ZRO/USDC": ArbiesAssets.ZRO,
+	"CRWV/USDC": ArbiesAssets.CRWV,
+	"XMR/USDC": ArbiesAssets.XMR,
 }
 
 const RisexApiUrl = "https://api.rise.trade/v1";

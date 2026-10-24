@@ -1,0 +1,22 @@
+01:
+- TCGXUSD: unknown underlying (card games)
+
+Lighter:
+- AAOI: reduce-only
+- ARM: reduce-only
+- AVGO: reduce-only
+- AXTI: reduce-only
+- BE: reduce-only
+- BYD: reduce-only
+- GME: reduce-only
+- KIOXIA: reduce-only
+- KORU: reduce-only
+- NOK: reduce-only
+- POPMART: reduce-only
+- QCOM: reduce-only
+- SOXS: reduce-only
+- US100: same index as QQQ, QQQ kept (bigger OI)
+- US500: same index as SPY, SPY kept (bigger OI)
+- USDHKD: reduce-only
+- VARIATIONAL: reduce-only
+- WDC: reduce-only
