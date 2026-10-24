@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { AssetAndFdg } from "@/app/api/funding/utils"
 import { AssetValues } from "../assets"
 import { ZoDex } from "./01"
-import { EtherealDex } from "./ethereal"
+import { MeridianDex } from "./meridian"
 import { ExtndDex } from "./extended"
 import { HLDex } from "./hyperliquid"
 import { LighterDex } from "./lighter"
@@ -20,7 +20,7 @@ export type DexName =
   | "Extended"
   | "Variational"
   | "Pacifica"
-  | "Ethereal"
+  | "Meridian"
   | "Paradex"
   | "01"
   | "RISEx";
@@ -49,7 +49,7 @@ export const AllDexes: Record<DexName, Dex> = {
   [ExtndDex.Name]: ExtndDex,
   [VariDex.Name]: VariDex,
   [PacificaDex.Name]: PacificaDex,
-  [EtherealDex.Name]: EtherealDex,
+  [MeridianDex.Name]: MeridianDex,
   [ParadexDex.Name]: ParadexDex,
   [ZoDex.Name]: ZoDex,
   [RisexDex.Name]: RisexDex,
