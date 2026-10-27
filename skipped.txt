@@ -20,3 +20,33 @@ Lighter:
 - USDHKD: reduce-only
 - VARIATIONAL: reduce-only
 - WDC: reduce-only
+
+QFEX:
+- CXMT-CNY: non-USD quote, no fx conversion
+- HYUNDAI-KRW: non-USD quote, no fx conversion
+- KIOXIA-JPY: non-USD quote, no fx conversion
+- SAMSUNG-KRW: non-USD quote, no fx conversion
+- SIVE-SEK: non-USD quote, no fx conversion
+- SKHYNIX-KRW: non-USD quote, no fx conversion
+- SOFTBANK-JPY: non-USD quote, no fx conversion
+- UNITREE-CNY: non-USD quote, no fx conversion
+
+Variational:
+- CNA50S: swap (index)
+- COCOAP: swap (commodity)
+- COPPP: swap (commodity)
+- DXIP: swap (index)
+- GASOLP: swap (commodity)
+- HOILP: swap (commodity)
+- TWIS: swap (index)
+- UKOILP: swap (commodity)
+- US100S: swap (index)
+- US2KS: swap (index)
+- US30S: swap (index)
+- US400S: swap (index)
+- US500S: swap (index)
+- USFNGS: swap (index)
+- USOILP: swap (commodity)
+- VXIP: swap (index)
+- XAGS: swap (commodity)
+- XAUS: swap (commodity)
