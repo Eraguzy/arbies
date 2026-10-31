@@ -8,157 +8,152 @@
   - commodities: `XAUS`, `XAGS`, `COPPP`, `USOILP`, `UKOILP`, `HOILP`, `GASOLP`, `COCOAP`
 - collateral/fx handling: pairs not listed because they are quoted in non-USD with no fx conversion
   - QFEX: `SAMSUNG-KRW`, `SKHYNIX-KRW`, `HYUNDAI-KRW`, `KIOXIA-JPY`, `SOFTBANK-JPY`, `CXMT-CNY`, `UNITREE-CNY`, `SIVE-SEK`
+- add history
 
 ## AI listings tracker
 
-A daily github action detects new/delisted pairs, an ai agent opens a PR, review and merge happen on telegram.
+every day, jules redoes the full listings check from master and opens a new PR with every pending update. that PR recaps the previous one, which then gets closed.
 
-- **agent:** jules (google's cloud coding agent), driven by api key. google ai plus includes "limited" jules access (exact quota unpublished; the base tier is 15 tasks/day, 3 concurrent)
-- **why not gemini directly:** gemini cli does not support google ai plus, and antigravity cli headless only reuses credentials from an interactive login. neither fits github actions
+### Decided
 
-### Flow
+- **agent:** jules, started through its api. gemini cli does not support google ai plus, and antigravity cli only runs headless with credentials from an interactive login
+- **quota:** 15 jules sessions per day. messages and PR comments don't count
+- **trigger:** a github actions cron starts 1 session per day, at 04:00 UTC
+- **full job:** every run compares every live pair of every dex with master, never only the day's new listings. no delta, no snapshot, no lock
+- **one new PR per run:** always, even if nothing changed. it recaps the previous listings PR, which then gets closed
+- **memory:** the daily workflow gives the previous listings PR to the new session, which writes the recap (steps 2 and 4)
+- **review:** in the github mobile app. an `@Jules` comment makes jules push a commit to the same PR
+- **other people's comments:** jules says it only acts on comments from repo collaborators. not tested, accepted
+- **later:** telegram, swapping jules for codex or claude code
 
-```
-daily cron: open bot PR? stop -> fetch live lists -> diff vs last snapshot -> nothing new? stop
-new or removed symbols -> agent start() -> PR -> telegram report
-reply on telegram -> poller -> reply posted as a PR comment -> agent followUp() -> same PR updated -> telegram report (loop)
-/merge on telegram -> poller -> merge -> vercel deploys master
-```
+### Steps
 
-### Open decisions (settle before step 2)
+#### 0. jules setup: done
 
-- **gate:** daily delta vs the last snapshot, the agent runs only when something changed (recommended)
-  - or: the agent gets the full lists every day and compares them itself (1 jules task daily, less reliable)
-- **replies:** poll telegram every 5 min from github actions (recommended, nothing on vercel)
-  - or: a webhook route in the next app (instant, but adds a public endpoint that can merge PRs)
+- jules github app installed on the repo
+- `JULES_API_KEY` in the github actions secrets and in `.env`
 
-### Step 0 (manual, no code): jules setup
+#### 1. spike: done
 
-- install the jules github app on arbies (jules.google)
-- create an api key at `jules.google.com/settings#api`
-- **output:** `JULES_API_KEY`, added as a github actions secret and to the local gitignored `.env`
-- **next:** step 1 needs it
+- left: close PR #2, delete the branches `hyperliquid-live-count-3407452927553309859` and `jules-spike-4-hyperliquid-perp-4792587438740880025`
 
-### Step 1: spike, verify jules on plus (no repo files, throwaway branch `jules-spike`)
+#### 2. write `scripts/listings/prompt.md`
 
-- **check 1:** `GET /v1alpha/sources` lists the repo. proves plus can use the api
-- **check 2:** create a session with `automationMode: AUTO_CREATE_PR`, task: "curl hyperliquid meta, report the count, add one line to `skipped.txt`". proves the vm has internet access and that jules opens a PR
-- **check 3:** `:sendMessage` after the PR exists ("change that line"). proves a correction lands as a new commit in the same PR
-- **check 4:** the prompt says "never wait for input, put questions in the PR body". proves the session never gets stuck in `AWAITING_USER_FEEDBACK`
-- **check 5:** quota. does 1 session = 1 task, do messages count (read from the jules ui if it shows usage)
-- **output:** pass/fail table + sample session/activity json, then delete the spike branch and PR
-- **next:** check 2 decides who fetches the live lists (the action or jules), check 3 decides the loop design, check 4 sets the prompt rules, check 5 sets the budget
-- **if check 1 or 2 fails:** stop. fallback = gemini cli github action (`run-gemini-cli`) with a paid gemini api key (plus unused), then re-plan
+the instructions jules follows on every run. they must say:
 
-### Step 2: live-list getters, `scripts/listings/fetch.ts` (new)
+**task**
 
-10 dexes, verified endpoints and filters, no matching, no regex:
+- start from master. compare the live perps of every dex in `AllDexes` (`lib/funding/dexes/arbies.ts`) with its `PairRegistry` and with `skipped.txt`
+- fetch the lists and compute the diff with a script, not by reading. don't commit the script
+- a dex missing from the table below: find its markets endpoint from its file, and say so in the PR
 
-| dex | endpoint | symbols | filter |
+**live lists**
+
+| dex | request | symbols | keep only |
 |---|---|---|---|
-| hyperliquid | `POST https://api.hyperliquid.xyz/info` body `{"type":"meta","dex":""}` | `universe[].name` | `!isDelisted` |
-| lighter | `GET https://mainnet.zklighter.elliot.ai/api/v1/orderBooks` | `order_books[].symbol` | `status "active"` and `market_type "perp"` (11 spot markets otherwise) |
-| extended | `GET https://api.starknet.extended.exchange/api/v1/info/markets` | `data[].name` | `status "ACTIVE"` and `type "PERPETUAL"` (the `active` flag is true even for delisted markets) |
-| paradex | `GET https://api.prod.paradex.trade/v1/markets` | `results[].symbol` | `asset_kind "PERP"` (9k+ options otherwise) |
-| meridian | `GET https://api.meridian.xyz/v1/product` | `data[].ticker` | `status "ACTIVE"` |
-| pacifica | `GET https://api.pacifica.fi/api/v1/info` | `data[].symbol` | `instrument_type "perpetual"` |
-| variational | `GET https://omni-client-api.prod.ap-northeast-1.variational.io/metadata/stats` | `listings[].ticker` | no filter |
-| qfex | `GET https://api.qfex.com/md/contracts` | `data[].ticker_id` | no filter |
-| 01 | `GET https://zo-mainnet.n1.xyz/info` | `markets[].symbol` | no filter |
-| risex | `GET https://api.rise.trade/v1/markets` | `data.markets[].config.name` | `active` |
+| hyperliquid | `POST https://api.hyperliquid.xyz/info` with `{"type":"meta","dex":""}` | `universe[].name` | `isDelisted` not true |
+| lighter | `GET https://mainnet.zklighter.elliot.ai/api/v1/orderBooks` | `order_books[].symbol` | `status` `active` and `market_type` `perp` |
+| extended | `GET https://api.starknet.extended.exchange/api/v1/info/markets` | `data[].name` | `status` `ACTIVE` and `type` `PERPETUAL` |
+| paradex | `GET https://api.prod.paradex.trade/v1/markets` | `results[].symbol` | `asset_kind` `PERP` |
+| meridian | `GET https://api.meridian.xyz/v1/product` | `data[].ticker` | `status` `ACTIVE` |
+| pacifica | `GET https://api.pacifica.fi/api/v1/info` | `data[].symbol` | `instrument_type` `perpetual` |
+| variational | `GET https://omni-client-api.prod.ap-northeast-1.variational.io/metadata/stats` | `listings[].ticker` | all |
+| qfex | `GET https://api.qfex.com/md/contracts` | `data[].ticker_id` | all |
+| 01 | `GET https://zo-mainnet.n1.xyz/info` | `markets[].symbol` | all |
+| risex | `GET https://api.rise.trade/v1/markets` | `data.markets[].config.name` | `active` true and `reduce_only` false |
 
-- **output:** `live.json` = `{ "lighter": ["BTC", ...], ... }` plus an error field per dex, so one dead api does not block the others
-- **test:** run locally. every dex returns a list with no error, and every live pair is either in a registry or in `skipped.txt`
-- **constraint:** tsconfig includes `**/*.ts`, so vercel's `next build` typechecks this file. it must compile, and the scripts must not import each other (`.ts` imports need a tsconfig change)
-- **next:** step 3 diffs it
+**mapping**
 
-### Step 3: daily run, `.github/workflows/listings-daily.yml` + `scripts/listings/agent.ts` + `scripts/listings/prompt.md` (new)
+- registry key: the exact api symbol. value: `ArbiesAssets.X`
+- one pair per asset per dex. two pairs for one underlying: keep the bigger open interest, add the other to `skipped.txt`
+- check how the other registries map a symbol before mapping it: the same ticker can mean different assets. `SPX` is the SPX6900 memecoin, the s&p 500 is `SPY500`. when unsure, compare prices across dexes
+- a lowercase `k`, `1000` or `1000000` prefix is a multiplier: `kPEPE` and `1000PEPE` map to `ArbiesAssets.PEPE`. an uppercase K is not: `KORU`, `KSM`, `KAITO` are real tickers
+- extended `_24_5` markets map to the base stock: `NVDA_24_5-USD` maps to `ArbiesAssets.NVDA`
+- new asset: add `KEY: "KEY"` to `ArbiesAssets` in `lib/funding/assets.ts`, under `// crypto`, `// forex`, `// stocks` or `// commodities`. a key starting with a digit is quoted and read as `ArbiesAssets["0G"]`. a key already taken by another asset gets a longer name: the stock BEAM is `BEAMTHERAPEUTICS`
 
-- **triggers:** daily cron + manual run (`workflow_dispatch`) with mode `delta` | `full`
-- `agent.ts` hides the agent behind 2 functions, so it can be swapped later (see [swapping agents later](#swapping-agents-later-codex-claude-code)):
-  - `start(task) => { pr, reply }`: the agent edits the code and opens a PR, or opens none and says why
-  - `followUp(pr, message) => { reply }`: the agent adds commits to that PR's branch and returns its answer
-  - jules version: start = create session on master + poll until done + read the PR url from `outputs`. followUp = `:sendMessage` + poll until idle + read the reply from activities
-- **sequence:**
-  1. an open PR labeled `listings-bot` exists: stop. this is the lock. it replaces the 6h idea: jules keeps the conversation server-side, and the PR comments keep a copy
-  2. run `fetch.ts`, restore the previous `live.json` from the actions cache
-  3. delta mode: added/removed symbols per dex. empty, or first run: save the snapshot, stop. full mode: the agent gets every live list (tests and audits)
-  4. call `start()` with `prompt.md` + the delta
-  5. label the PR `listings-bot`. jules only: post the session id as a PR comment, so `followUp()` can find the session
-  6. save the new snapshot only now, so a failed run retries the same delta the next day
-- **`prompt.md` contains:**
-  - allowed files: `lib/funding/assets.ts` and the `PairRegistry` blocks in `lib/funding/dexes/*.ts`
-  - asset conventions: grouping comments in `assets.ts`, quoted numeric keys like `ArbiesAssets["0G"]`
-  - the `skipped.txt` rule: never add those pairs
-  - "never wait for input": questions go in the PR body
-  - fixed PR body: Added / Removed / Ambiguities / Files modified and why
-  - naming the files keeps it compatible with `AGENTS.md`, which jules reads
-- **output:** one PR by the agent with that body, or no PR plus the agent's reason
-- **test:** manual full run, expect a PR for any missing pair
-- **next:** step 4 reports this PR, step 5 finds it through the label
+**skipped.txt**
 
-### Step 4: telegram report (in `agent.ts`)
+- format: a `Dex:` line, then `- SYMBOL: reason`
+- never add a pair listed there to a registry. never remove a line
+- add these to it, never to a registry:
+  - variational swaps: `name` starts with `Swap on`
+  - non-usd quotes: qfex `target_currency` is not `USD`
+  - reduce-only markets. lighter's `orderBooks` shows them as `active`
+  - unknown underlying, like 01 `TCGXUSD`: don't guess
 
-- **manual:** create the bot with `@BotFather` and send it one message. the chat id is then read with `getUpdates`
-- **secrets:** `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
-- after each `start()` or `followUp()`, send: PR link, PR body, the agent's reply, the vercel preview check status, and "reply to correct, /merge, /close". cut at 4096 chars (telegram limit)
-- **output:** one telegram message per agent turn
-- **next:** step 5 reads the reply
+**removals**
 
-### Step 5: reply poller, `.github/workflows/listings-poll.yml` (new)
+- delisted pair: remove its registry line
+- asset that no dex uses anymore: remove it from `ArbiesAssets`
 
-- cron every 5 min. github delays scheduled runs, so expect a 5-15 min pickup
-- **sequence:**
-  1. no open `listings-bot` PR: exit
-  2. `getUpdates`. ignore every chat except `TELEGRAM_CHAT_ID`, then ack the offset so no message runs twice (telegram stores the offset, no state file)
-  3. `/merge`: squash-merge with `GITHUB_TOKEN`, only if the checks are green, then vercel deploys master. `/close`: close the PR
-  4. any other text: post it as a PR comment (the PR is the memory), then call `followUp(pr, message)`
-  5. send a new step 4 report with the agent's reply
-- both workflows share one concurrency group, so they never race
-- the repo is public, so those PR comments are public
-- **output:** corrections land in the same PR, the loop runs until `/merge` or `/close`
-- **next:** merge/close removes the lock. the next daily run diffs against the snapshot saved in step 3.6
+**recap of the previous PR**
 
-### Step 6: end-to-end test
+your corrections live in the previous PR and would be lost when it closes. the daily workflow puts that PR in the prompt (step 4). jules then:
 
-- manual full run, one correction via telegram, then `/merge`
-- **expect:** a new commit in the same PR, an updated telegram report, the merge, a vercel deploy, and the poller exiting at step 5.1
+1. applies the corrections asked there
+2. starts the new PR body with `Recap of #N`: what that PR proposed, the corrections, what stays pending
+3. copies its `Standing decisions` list word for word, then adds the new ones
 
-### Security
+no previous PR in the prompt: no recap
 
-- anyone can message a telegram bot. the chat id filter (step 5.2) is what stops a stranger from instructing the agent or merging
-- public repo = public actions logs. log ids and states only, never message text
-- secrets live only in github actions secrets and the local `.env`
+**PR**
 
-### Risks
+- title starts with `listings:`. jules doesn't reuse the session title, so the prompt must say it
+- body sections: `Recap of #N`, `Standing decisions`, `Added`, `Removed`, `Ambiguities`, `Files modified`
+- a previous PR is in the prompt: always open a new PR, even if nothing changed. no previous PR and nothing to change: no PR
+- never wait for input: decide, and write the doubts under `Ambiguities`
+- only edit `lib/funding/assets.ts`, the `PairRegistry` objects in `lib/funding/dexes/*.ts` and `skipped.txt`. follow `AGENTS.md`
 
-- the jules api is v1alpha, and jules is in beta with no guaranteed capacity
-- github disables cron workflows in public repos after 60 days without repo activity
+**output:** `scripts/listings/prompt.md` on master, where step 4's sessions read it
 
-### Swapping agents later (codex, claude code)
+#### 3. write `.github/workflows/listings-supersede.yml`
 
-- **stays the same:** `fetch.ts`, the delta gate, the PR lock, the telegram report + poller, `/merge`, `prompt.md`
-- **changes:** rewrite `start()` and `followUp()` in `agent.ts`, change 1 secret
-- codex cli and claude code run on the github runner: the workflow checks out the branch, runs `codex exec` or `claude -p`, then pushes and opens the PR itself
-- they forget everything when the job ends, so `followUp()` resends `prompt.md` + the PR diff + the PR comment thread every turn (this is why step 5.4 posts replies as PR comments)
-- claude code reads `CLAUDE.md`: add a 1-line `CLAUDE.md` containing `@AGENTS.md`
-- subscription use in CI differs per vendor, check it at swap time
-- switching between codex and claude code later is cheaper still (same shape)
+closes the previous listings PR when a new one opens.
 
-### Planned files (all new, no existing file touched)
+- trigger: `pull_request` of type `opened`, title starting with `listings:`
+- `gh pr close --delete-branch` every other open `listings:` PR, with the comment `Superseded by #N`. permissions: `pull-requests: write`, `contents: write`
+- match on the title: jules opens PRs under `Eraguzy` and names the branches itself
+- merge it before the first daily run
+- **output:** at most one open listings PR
 
-- `scripts/listings/fetch.ts`
-- `scripts/listings/agent.ts`
-- `scripts/listings/prompt.md`
-- `.github/workflows/listings-daily.yml`
-- `.github/workflows/listings-poll.yml`
+#### 4. write `.github/workflows/listings-daily.yml`
 
-### Refs
+starts the daily jules session.
 
-- jules api: https://jules.google/docs/api/reference/
-- jules sessions: https://jules.google/docs/api/reference/sessions/
-- jules limits: https://jules.google/docs/usage-limits/
+- triggers: `schedule` with cron `0 4 * * *`, and `workflow_dispatch` for manual runs
+- collect the previous open `listings:` PR with `gh`, authenticated by `github.token`:
+  - its number: `gh pr list --state open --json number,title`, keep the title starting with `listings:`
+  - its body: `gh pr view N --json body`
+  - its diff: `gh pr diff N`
+  - its comments and reviews: `gh api` on `repos/Eraguzy/arbies/issues/N/comments`, `repos/Eraguzy/arbies/pulls/N/reviews` and `repos/Eraguzy/arbies/pulls/N/comments`. keep only those whose `user.login` is `Eraguzy` or `google-labs-jules[bot]`
+- the prompt, in this order:
+  1. `Follow scripts/listings/prompt.md.`
+  2. with a previous PR, this context: `Below is the previous listings PR #N, opened by the previous run. Eraguzy's comments are corrections to that run: apply all of them in this run, whether the previous session applied them or not. The comments by google-labs-jules[bot] are the previous session's replies.`
+  3. then that PR's body, diff, comments and reviews, each under its own heading
+  4. without a previous PR: `No previous listings PR.`
+- one request: `POST https://jules.googleapis.com/v1alpha/sessions`, header `x-goog-api-key` from the `JULES_API_KEY` secret. build the body with `jq` so the text is escaped:
 
-## Ignore
+```json
+{
+  "title": "listings: daily check",
+  "prompt": "<the prompt above>",
+  "sourceContext": {
+    "source": "sources/github/Eraguzy/arbies",
+    "githubRepoContext": { "startingBranch": "master" }
+  },
+  "automationMode": "AUTO_CREATE_PR"
+}
+```
 
-- add history
+- fail the job if the response is not 200. log only the session id: the repo is public, so its logs are too
+- the job doesn't wait for jules: the PR comes by email
+- github disables scheduled workflows in public repos after 60 days without activity. re-enable it from the actions tab
+- **output:** 1 session per day, so 1 `listings:` PR per day
+
+#### 5. end-to-end test
+
+1. run `listings-daily.yml` manually: PR A
+2. comment `@Jules <correction>` on A: a commit lands on A
+3. run it again: PR B
+4. check: B's title starts with `listings:`, B starts with `Recap of #A` and includes the correction, A is closed with `Superseded by #B`
+5. merge B from the github app once its vercel check is green: vercel deploys master
