@@ -50,3 +50,4 @@ Variational:
 - VXIP: swap (index)
 - XAGS: swap (commodity)
 - XAUS: swap (commodity)
+# jules-spike: hyperliquid live count = 179
