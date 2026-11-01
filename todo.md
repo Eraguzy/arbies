@@ -47,7 +47,8 @@ every day, claude redoes the full listings check from master and opens a new PR 
   - the workflow commits on a new branch `listings/YYYY-MM-DD-<run id>`, pushes it and opens the PR with `GITHUB_TOKEN`. it never pushes to master. no change vs master: no PR
   - then it closes every older open `listings:` PR with `gh pr close --delete-branch` and the comment `Superseded by #N`. a PR opened with `GITHUB_TOKEN` triggers no other workflow, so this can't be a separate one
   - github disables scheduled workflows in public repos after 60 days without activity. re-enable it from the actions tab
-- `.github/workflows/listings-claude-replies.yml`: todo. the replies
+- `.github/workflows/listings-claude-replies.yml`: done. the replies
+  - left: push it to master
   - triggers: `issue_comment`, `pull_request_review_comment` and `pull_request_review` containing `@claude`
   - claude rereads the PR, pushes commits to its branch and replies in a comment
   - on a `listings:` PR, claude follows `daily-listings-prompt.md`
