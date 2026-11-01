@@ -1,6 +1,8 @@
 name: listings-daily-run
 
-# every day: claude redoes the full listings check, then the workflow opens the PR and closes the older 'listings:' ones
+# every day 4AM utc: claude redoes the full listings check,
+# then the workflow opens the PR and closes the older 'listings:' ones
+# claude has access to what these previous listings contain
 on:
   schedule:
     - cron: "0 4 * * *"
