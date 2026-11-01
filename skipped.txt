@@ -25,11 +25,13 @@ QFEX:
 - CXMT-CNY: non-USD quote, no fx conversion
 - HYUNDAI-KRW: non-USD quote, no fx conversion
 - KIOXIA-JPY: non-USD quote, no fx conversion
+- NIFTY-INR: non-USD quote, no fx conversion
 - SAMSUNG-KRW: non-USD quote, no fx conversion
 - SIVE-SEK: non-USD quote, no fx conversion
 - SKHYNIX-KRW: non-USD quote, no fx conversion
 - SOFTBANK-JPY: non-USD quote, no fx conversion
 - UNITREE-CNY: non-USD quote, no fx conversion
+- YUBICO-SEK: non-USD quote, no fx conversion
 
 Variational:
 - CNA50S: swap (index)

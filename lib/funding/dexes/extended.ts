@@ -339,6 +339,12 @@ export const ExtndPairRegistry: Record<string, AssetValues> = {
   "JP225-USD": ArbiesAssets.JP225,
   "EWZ-USD": ArbiesAssets.EWZ,
   "XIAOMI-USD": ArbiesAssets.XIAOMI, // priced in HKD not USD, but both are pegged
+  "ERA-USD": ArbiesAssets.ERA,
+  "CT-USD": ArbiesAssets.CT,
+  "ZK-USD": ArbiesAssets.ZK,
+  "BAT-USD": ArbiesAssets.BAT,
+  "JIO-USD": ArbiesAssets.JIO,
+  "BR-USD": ArbiesAssets.BR,
 }
 
 export function getExtendedPair(asset: AssetValues): string | undefined {
