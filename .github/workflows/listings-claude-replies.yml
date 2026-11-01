@@ -37,6 +37,6 @@ jobs:
           claude_args: |
             --model claude-opus-5-5
             --effort max
-            --append-system-prompt "On a pull request whose title starts with 'listings:', follow scripts/listings/daily-listings-prompt.md for every change."
-            --allowedTools "Bash(curl:*),Bash(node:*),Bash(npm:*)"
+            --append-system-prompt "On a pull request whose title starts with 'listings:', follow scripts/listings/daily-listings-prompt.md for every change, and update the PR body yourself. Reply in as few words as possible: one line per change, plus a question only when you can't decide. No todo list, no file list, no explanation of the rules."
+            --allowedTools "Bash(curl:*),Bash(node:*),Bash(npm:*),Bash(gh pr view:*),Bash(gh pr edit:*)"
             --add-dir /tmp
