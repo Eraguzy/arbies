@@ -1,0 +1,122 @@
+name: listings-daily-run
+
+# every day: claude redoes the full listings check, then the workflow opens the PR and closes the older 'listings:' ones
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+  id-token: write
+
+concurrency:
+  group: listings-daily-run
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build the prompt from the previous listings PR
+        id: prompt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          prev=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 --json number,title \
+            --jq '[.[] | select(.title | startswith("listings:"))] | max_by(.number) | .number // empty')
+
+          mkdir -p /tmp/listings
+          {
+            echo "Follow scripts/listings/daily-listings-prompt.md."
+            echo
+            echo "This workflow opens the PR itself: don't commit, push or open it. Write the PR body to /tmp/listings/pr-body.md. The workflow sets the title \`listings: YYYY-MM-DD\`."
+            echo
+            if [ -n "$prev" ]; then
+              echo "Below is the previous listings PR #$prev, opened by the previous run. Eraguzy's comments are corrections to that run: apply all of them in this run, whether the previous session applied them or not. The comments by claude[bot] are the previous session's replies."
+              echo
+              echo "## Body of #$prev"
+              echo
+              gh pr view "$prev" --repo "$GITHUB_REPOSITORY" --json body --jq .body
+              echo
+              echo "## Diff of #$prev"
+              echo
+              echo '```diff'
+              gh pr diff "$prev" --repo "$GITHUB_REPOSITORY"
+              echo '```'
+              echo
+              echo "## Comments on #$prev"
+              echo
+              gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$prev/comments" \
+                --jq '.[] | select(.user.login == "Eraguzy" or .user.login == "claude[bot]") | "### \(.user.login), \(.created_at)\n\n\(.body)\n"'
+              echo "## Reviews of #$prev"
+              echo
+              gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$prev/reviews" \
+                --jq '.[] | select(.user.login == "Eraguzy" or .user.login == "claude[bot]") | select((.body // "") != "") | "### \(.user.login), \(.state), \(.submitted_at)\n\n\(.body)\n"'
+              echo "## Review comments on #$prev"
+              echo
+              gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$prev/comments" \
+                --jq '.[] | select(.user.login == "Eraguzy" or .user.login == "claude[bot]") | "### \(.user.login) on \(.path), \(.created_at)\n\n\(.body)\n"'
+            else
+              echo "No previous listings PR."
+            fi
+          } > /tmp/listings/prompt.md
+
+          delim="EOF_$(openssl rand -hex 8)"
+          { echo "prompt<<$delim"; cat /tmp/listings/prompt.md; echo "$delim"; } >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.prompt.outputs.prompt }}
+          claude_args: |
+            --model claude-opus-5-5
+            --effort max
+            --allowedTools "Bash(curl:*),Bash(node:*),Bash(npm:*),Read,Write,Edit,Glob,Grep"
+            --add-dir /tmp
+
+      - name: Open the PR and close the older listings PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # claude may only edit these files
+          outside=$(git status --porcelain --untracked-files=all | cut -c4- \
+            | grep -vE '^(lib/funding/assets\.ts|lib/funding/dexes/[^/]+\.ts|skipped\.txt)$' || true)
+          if [ -n "$outside" ]; then
+            echo "::error::files changed outside the allowed list:"
+            echo "$outside"
+            exit 1
+          fi
+
+          if [ ! -s /tmp/listings/pr-body.md ]; then
+            echo "::error::claude wrote no PR body"
+            exit 1
+          fi
+
+          day=$(date -u +%F)
+          branch="listings/$day-$GITHUB_RUN_ID"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -A lib/funding/assets.ts lib/funding/dexes skipped.txt
+          # empty commit when nothing changed: a new PR is opened every day
+          git commit --allow-empty -m "listings: $day"
+          git push origin "$branch"
+
+          url=$(gh pr create --repo "$GITHUB_REPOSITORY" --base master --head "$branch" \
+            --title "listings: $day" --body-file /tmp/listings/pr-body.md)
+          new=${url##*/}
+          echo "opened #$new"
+
+          older=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 --json number,title \
+            --jq ".[] | select((.title | startswith(\"listings:\")) and .number < $new) | .number")
+          for n in $older; do
+            gh pr close "$n" --repo "$GITHUB_REPOSITORY" --delete-branch --comment "Superseded by #$new"
+          done

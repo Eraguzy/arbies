@@ -78,7 +78,7 @@ Without a previous listings PR in the prompt: no recap, and `Standing decisions`
 - Body: these `##` sections, in this order: `Recap of #N`, `Standing decisions`, `Added`, `Removed`, `Ambiguities`, `Files modified`. Write `None` in an empty section.
 - `Added` and `Removed`: one line per change, grouped by dex, with the symbol and its `ArbiesAssets` key, whether the asset is new, or the `skipped.txt` reason.
 - `Files modified`: each file and why.
-- With a previous listings PR in the prompt, always open a new PR, even if this run found nothing new. Without one, and with nothing to change, open no PR.
+- Always open a new PR, even if this run found nothing new.
 - Never wait for input. Decide, then write every doubt under `Ambiguities`. Where `AGENTS.md` says to ask first, write the question under `Ambiguities` instead.
 - Only edit the `ArbiesAssets` object in `lib/funding/assets.ts`, the `PairRegistry` objects in `lib/funding/dexes/*.ts`, and `skipped.txt`. Follow `AGENTS.md`.
 - A typecheck error in code you didn't touch: don't fix it, list it under `Ambiguities`.
