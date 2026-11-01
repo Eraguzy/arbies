@@ -20,14 +20,16 @@ Fetch the lists and compute the comparison with a script, not by reading the res
 | Hyperliquid | `POST https://api.hyperliquid.xyz/info` with the body `{"type":"meta","dex":""}` | `universe[].name` | `isDelisted` is not `true` |
 | Lighter | `GET https://mainnet.zklighter.elliot.ai/api/v1/orderBookDetails` | `order_book_details[].symbol` | `status` is `active` and `market_config.force_reduce_only` is `false` |
 | Extended | `GET https://api.starknet.extended.exchange/api/v1/info/markets` | `data[].name` | `status` is `ACTIVE` and `type` is `PERPETUAL` |
-| Paradex | `GET https://api.prod.paradex.trade/v1/markets` | `results[].symbol` | `asset_kind` is `PERP` |
+| Paradex | `GET https://api.prod.paradex.trade/v1/markets` | `results[].symbol` | `asset_kind` is `PERP` and `trading_mode` is `STANDARD` |
 | Meridian | `GET https://api.meridian.xyz/v1/product` | `data[].ticker` | `status` is `ACTIVE` |
 | Pacifica | `GET https://api.pacifica.fi/api/v1/info` | `data[].symbol` | `instrument_type` is `perpetual` |
-| Variational | `GET https://omni-client-api.prod.ap-northeast-1.variational.io/metadata/stats` | `listings[].ticker` | all |
-| QFEX | `GET https://api.qfex.com/md/contracts` | `data[].ticker_id` | all |
+| Variational | `GET https://omni-client-api.prod.ap-northeast-1.variational.io/metadata/stats` | `listings[].ticker` | `name` doesn't start with `Swap on` |
+| QFEX | `GET https://api.qfex.com/md/contracts` | `data[].ticker_id` | `target_currency` is `USD` |
 | 01 | `GET https://zo-mainnet.n1.xyz/info` | `markets[].symbol` | all |
 | RISEx | `GET https://api.rise.trade/v1/markets` | `data.markets[].config.name` | `active` is `true` and `reduce_only` is `false` |
 
+- On any dex, a market the API marks as reduce-only is not live, even when the table doesn't name the field.
+- A pair this table filters out is not live: don't add it to `skipped.txt`. It comes back by itself if the dex lists it again.
 - A dex in `AllDexes` but not in this table: find its markets endpoint in its file, use it, and say so under `Ambiguities`.
 - A request that fails, or a list that is empty after filtering: leave that dex untouched and say so under `Ambiguities`. Otherwise every pair of that dex would look delisted.
 - A response that says more pages exist: fetch them all.
@@ -50,12 +52,12 @@ Fetch the lists and compute the comparison with a script, not by reading the res
 ## skipped.txt
 
 - Format: a `Dex:` line with the dex's `Name`, then one `- SYMBOL: reason` line per pair in alphabetical order, and a blank line between dexes. Reuse the wording of the existing reasons.
-- Never add a pair listed there to a registry. Never remove a line, even when the pair is no longer live.
-- Add these pairs to it, never to a registry:
-  - Variational swaps: the listing's `name` starts with `Swap on`.
-  - Non-USD quotes: the QFEX contract's `target_currency` is not `USD`.
+- Only for live pairs the API can't rule out, where a judgment call decides. Never add a pair listed there to a registry.
+- Add a line for:
   - Unknown underlying, like 01's `TCGXUSD`: don't guess.
   - The second pair of an underlying, as described in Mapping.
+- Remove a line when its reason no longer holds.
+- Justify every line you add or remove under `Added` or `Removed`.
 
 ## Removals
 
