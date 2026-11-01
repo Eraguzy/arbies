@@ -95,6 +95,10 @@ jobs:
             exit 1
           fi
 
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "nothing to change vs master: no PR"
+            exit 0
+          fi
           if [ ! -s /tmp/listings/pr-body.md ]; then
             echo "::error::claude wrote no PR body"
             exit 1
@@ -106,8 +110,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"
           git add -A lib/funding/assets.ts lib/funding/dexes skipped.txt
-          # empty commit when nothing changed: a new PR is opened every day
-          git commit --allow-empty -m "listings: $day"
+          git commit -m "listings: $day"
           git push origin "$branch"
 
           url=$(gh pr create --repo "$GITHUB_REPOSITORY" --base master --head "$branch" \

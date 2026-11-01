@@ -19,7 +19,7 @@ every day, claude redoes the full listings check from master and opens a new PR 
 - **agent:** claude code github action `anthropics/claude-code-action@v1`, on the github runner. jules is read-only after 2026-11-11 and closes on 2026-12-31. gemini cli does not support google ai plus, and antigravity cli only runs headless with credentials from an interactive login
 - **trigger:** a github actions cron at 04:00 UTC
 - **full job:** every run compares every live pair of every dex with master, never only the day's new listings. no delta, no snapshot, no lock
-- **one new PR per run:** always, even if nothing changed. it recaps the previous listings PR, which then gets closed
+- **one new PR per run:** whenever master is missing a change, even the same ones as the day before. no change vs master: no PR. it recaps the previous listings PR, which then gets closed
 - **memory:** the daily workflow gives the previous listings PR to the new run, which writes the recap. after a merge there is no previous PR: move the lasting `Standing decisions` into `daily-listings-prompt.md` by hand
 - **review:** in the github mobile app. an `@claude` comment makes claude push a commit to the same PR
 - **who can trigger claude:** only users with write access to the repo
@@ -44,7 +44,7 @@ every day, claude redoes the full listings check from master and opens a new PR 
     5. without a previous PR: `No previous listings PR.`
   - allows in `claude_args` the commands the prompt needs: `curl`, `node`, `npm`. bash is off by default
   - claude only edits files. the workflow fails if a file outside `lib/funding/assets.ts`, `lib/funding/dexes/` and `skipped.txt` changed
-  - the workflow commits on a new branch `listings/YYYY-MM-DD-<run id>`, pushes it and opens the PR with `GITHUB_TOKEN`. it never pushes to master. when nothing changed, the commit is empty so the PR still opens
+  - the workflow commits on a new branch `listings/YYYY-MM-DD-<run id>`, pushes it and opens the PR with `GITHUB_TOKEN`. it never pushes to master. no change vs master: no PR
   - then it closes every older open `listings:` PR with `gh pr close --delete-branch` and the comment `Superseded by #N`. a PR opened with `GITHUB_TOKEN` triggers no other workflow, so this can't be a separate one
   - github disables scheduled workflows in public repos after 60 days without activity. re-enable it from the actions tab
 - `.github/workflows/listings-claude-replies.yml`: todo. the replies
