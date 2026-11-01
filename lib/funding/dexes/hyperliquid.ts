@@ -184,6 +184,7 @@ export const HLPairRegistry: Record<string, AssetValues> = {
   "CASHCAT": ArbiesAssets.CASHCAT,
   "PONS": ArbiesAssets.PONS,
   "USELESS": ArbiesAssets.USELESS,
+  "XTEN": ArbiesAssets.XTEN,
 }
 
 const HLApiUrl = "https://api.hyperliquid.xyz/info";

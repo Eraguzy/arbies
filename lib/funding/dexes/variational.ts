@@ -323,7 +323,6 @@ export const VariPairRegistry: Record<string, AssetValues> = {
     "METIS": ArbiesAssets.METIS,
     "MEW": ArbiesAssets.MEW,
     "MINA": ArbiesAssets.MINA,
-    "MITO": ArbiesAssets.MITO,
     "MMT": ArbiesAssets.MMT,
     "MNT": ArbiesAssets.MNT,
     "MON": ArbiesAssets.MON,
@@ -392,7 +391,6 @@ export const VariPairRegistry: Record<string, AssetValues> = {
     "POWER": ArbiesAssets.POWER,
     "POWR": ArbiesAssets.POWR,
     "PROVE": ArbiesAssets.PROVE,
-    "PTB": ArbiesAssets.PTB,
     "PUFFER": ArbiesAssets.PUFFER,
     "PUMPFUN": ArbiesAssets.PUMP,
     "PUNDIX": ArbiesAssets.PUNDIX,
@@ -518,7 +516,6 @@ export const VariPairRegistry: Record<string, AssetValues> = {
     "UVXY": ArbiesAssets.UVXY,
     "VANATOKEN": ArbiesAssets.VANA,
     "VELO": ArbiesAssets.VELO,
-    "VELODROME": ArbiesAssets.VELODROME,
     "VELVET": ArbiesAssets.VELVET,
     "VET": ArbiesAssets.VET,
     "VIRTUAL": ArbiesAssets.VIRTUAL,
@@ -570,6 +567,8 @@ export const VariPairRegistry: Record<string, AssetValues> = {
     "ZORA": ArbiesAssets.ZORA,
     "ZRO": ArbiesAssets.ZRO,
     "ZRX": ArbiesAssets.ZRX,
+    "AMC": ArbiesAssets.AMC,
+    "BAC": ArbiesAssets.BAC,
 }
 
 const VariApiUrl = "https://omni-client-api.prod.ap-northeast-1.variational.io";
