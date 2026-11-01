@@ -15,7 +15,6 @@ export const LighterPairRegistry: Record<string, AssetValues> = {
   "AVNT": ArbiesAssets.AVNT,
   "DASH": ArbiesAssets.DASH,
   "AAPL": ArbiesAssets.AAPL,
-  "PROVE": ArbiesAssets.PROVE,
   "CRO": ArbiesAssets.CRO,
   "RIVER": ArbiesAssets.RIVER,
   "ARC": ArbiesAssets.ARC,
@@ -25,7 +24,6 @@ export const LighterPairRegistry: Record<string, AssetValues> = {
   "SKR": ArbiesAssets.SKR,
   "PENDLE": ArbiesAssets.PENDLE,
   "BCH": ArbiesAssets.BCH,
-  "EDGE": ArbiesAssets.EDGE,
   "WLD": ArbiesAssets.WLD,
   "SAMSUNGUSD": ArbiesAssets.SAMSUNG,
   "OP": ArbiesAssets.OP,
@@ -174,7 +172,6 @@ export const LighterPairRegistry: Record<string, AssetValues> = {
   "OURA": ArbiesAssets.OURA,
   "AI": ArbiesAssets.AI,
   "BIO": ArbiesAssets.BIO,
-  "RAIL": ArbiesAssets.RAIL,
   "DRV": ArbiesAssets.DRV,
   "DRAM": ArbiesAssets.DRAM,
   "UNITREE": ArbiesAssets.UNITREE,
@@ -202,6 +199,7 @@ export const LighterPairRegistry: Record<string, AssetValues> = {
   "QQQ": ArbiesAssets.QQQ,
   "EWY": ArbiesAssets.KOSPI,
   "TUR30": ArbiesAssets.BIST30,
+  "XTEN": ArbiesAssets.XTEN,
 }
 
 const LgtrApiUrl = "https://mainnet.zklighter.elliot.ai/api/v1";
