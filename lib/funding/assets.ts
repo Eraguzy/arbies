@@ -579,6 +579,7 @@ export const ArbiesAssets = {
   DUOL: "DUOL",
   DXYZ: "DXYZ",
   EBAY: "EBAY",
+  EIDO: "EIDO",
   EQIX: "EQIX",
   EWH: "EWH",
   EWZ: "EWZ",
