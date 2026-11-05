@@ -344,6 +344,7 @@ export const ExtndPairRegistry: Record<string, AssetValues> = {
   "BAT-USD": ArbiesAssets.BAT,
   "JIO-USD": ArbiesAssets.JIO,
   "BR-USD": ArbiesAssets.BR,
+  "ANTHROP-USD": ArbiesAssets.ANTHROPIC,
 }
 
 export function getExtendedPair(asset: AssetValues): string | undefined {
