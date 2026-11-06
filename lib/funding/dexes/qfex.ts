@@ -231,6 +231,7 @@ export const QFEXPairRegistry: Record<string, AssetValues> = {
   "EWZ-USD": ArbiesAssets.EWZ,
   "ICE-USD": ArbiesAssets.ICE,
   "NU-USD": ArbiesAssets.NU,
+  "FTNT-USD": ArbiesAssets.FTNT,
 }
 
 const QfexApiUrl = "https://api.qfex.com";
