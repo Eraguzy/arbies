@@ -515,6 +515,7 @@ export const ArbiesAssets = {
   ANTHROPIC: "ANTHROPIC",
   APP: "APP",
   ARM: "ARM",
+  ASELS: "ASELS",
   ASML: "ASML",
   ASST: "ASST",
   ASTS: "ASTS",
