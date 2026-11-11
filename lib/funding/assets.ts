@@ -605,6 +605,7 @@ export const ArbiesAssets = {
   GRAB: "GRAB",
   GRND: "GRND",
   GS: "GS",
+  GTLB: "GTLB",
   HD: "HD",
   HIMS: "HIMS",
   HON: "HON",
