@@ -18,7 +18,7 @@ Fetch the lists and compute the comparison with a script, not by reading the res
 | dex | request | symbols | keep only |
 |---|---|---|---|
 | Hyperliquid | `POST https://api.hyperliquid.xyz/info` with the body `{"type":"meta","dex":""}` | `universe[].name` | `isDelisted` is not `true` |
-| Lighter | `GET https://mainnet.zklighter.elliot.ai/api/v1/orderBookDetails` | `order_book_details[].symbol` | `status` is `active` and `market_config.force_reduce_only` is `false` |
+| Lighter | `GET https://mainnet.zklighter.elliot.ai/api/v1/orderBookDetails` | `order_book_details[].symbol` | `status` is `active` and `market_config.force_reduce_only` is `false`. Ignore `market_flags`: margin mode only |
 | Extended | `GET https://api.starknet.extended.exchange/api/v1/info/markets` | `data[].name` | `status` is `ACTIVE` and `type` is `PERPETUAL` |
 | Paradex | `GET https://api.prod.paradex.trade/v1/markets` | `results[].symbol` | `asset_kind` is `PERP` and `trading_mode` is `STANDARD` |
 | Meridian | `GET https://api.meridian.xyz/v1/product` | `data[].ticker` | `status` is `ACTIVE` |
