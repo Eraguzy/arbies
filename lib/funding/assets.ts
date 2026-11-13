@@ -19,7 +19,6 @@ export const ArbiesAssets = {
   ADA: "ADA",
   AERO: "AERO",
   AEVO: "AEVO",
-  AGI: "AGI",
   AGLD: "AGLD",
   AGT: "AGT",
   AI: "AI",

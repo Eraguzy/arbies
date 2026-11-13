@@ -25,7 +25,6 @@ export const VariPairRegistry: Record<string, AssetValues> = {
     "ADBE": ArbiesAssets.ADBE,
     "AERO": ArbiesAssets.AERO,
     "AEVO": ArbiesAssets.AEVO,
-    "AGI": ArbiesAssets.AGI,
     "AGLD": ArbiesAssets.AGLD,
     "AIOT": ArbiesAssets.AIOT,
     "AIOZ": ArbiesAssets.AIOZ,
