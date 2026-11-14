@@ -205,6 +205,9 @@ export const LighterPairRegistry: Record<string, AssetValues> = {
   "AAOI": ArbiesAssets.AAOI,
   "IREN": ArbiesAssets.IREN,
   "ASELS": ArbiesAssets.ASELS,
+  "AVGO": ArbiesAssets.AVGO,
+  "BE": ArbiesAssets.BE,
+  "GME": ArbiesAssets.GME,
 }
 
 const LgtrApiUrl = "https://mainnet.zklighter.elliot.ai/api/v1";
