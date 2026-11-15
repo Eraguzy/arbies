@@ -51,7 +51,6 @@ export const ParadexPairRegistry: Record<string, AssetValues> = {
   "PENDLE-USD-PERP": ArbiesAssets.PENDLE,
   "PUMP-USD-PERP": ArbiesAssets.PUMP,
   "PYTH-USD-PERP": ArbiesAssets.PYTH,
-  "SNDK-USD-PERP": ArbiesAssets.SNDK,
   "SOL-USD-PERP": ArbiesAssets.SOL,
   "SPCX-USD-PERP": ArbiesAssets.SPCX,
   "STRK-USD-PERP": ArbiesAssets.STRK,
