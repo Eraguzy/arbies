@@ -703,6 +703,7 @@ export const ArbiesAssets = {
   PL: "PL",
   PLTR: "PLTR",
   PLUG: "PLUG",
+  PM: "PM",
   PRE: "PRE",
   PRLB: "PRLB",
   PRME: "PRME",
