@@ -49,6 +49,7 @@ const ZoPairRegistry: Record<string, AssetValues> = {
 	"MORPHOUSD": ArbiesAssets.MORPHO,
 	"AEROUSD": ArbiesAssets.AERO,
 	"XMRUSD": ArbiesAssets.XMR,
+	"NVDAUSD": ArbiesAssets.NVDA,
 }
 
 const ZoApiUrl = "https://zo-mainnet.n1.xyz";
