@@ -8,7 +8,7 @@ export function annualizeHourlyFunding(hourlyFunding: number): number {
 }
 
 export function annualizeHourlyQFEXFunding(hourlyFunding: number): number {
-  return hourlyFunding * 52 * 120; // 120hrs a week, 52 weeks a year
+  return hourlyFunding * 24 * 261 * 100; // 261 days a year
 }
 
 export function annualize8HourlyFunding(hourlyFunding: number): number {
