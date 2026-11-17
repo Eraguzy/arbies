@@ -1,5 +1,5 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
-import { annualizeExactHourlyFunding, AssetAndFdg } from "@/app/api/funding/utils"
+import { annualizeHourlyQFEXFunding, AssetAndFdg } from "@/app/api/funding/utils"
 import type { Dex } from "@/lib/funding/dexes/arbies"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -267,7 +267,7 @@ export const QFEXDex = {
       if (QFEXPairRegistry[pairData.ticker_id]) {
         fundingData.push({
           name: QFEXPairRegistry[pairData.ticker_id],
-          funding: annualizeExactHourlyFunding(pairData.next_funding_rate),
+          funding: annualizeHourlyQFEXFunding(pairData.next_funding_rate),
         });
       }
     }
