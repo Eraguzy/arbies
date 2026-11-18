@@ -789,6 +789,7 @@ export const ArbiesAssets = {
   VCX: "VCX",
   VISA: "VISA",
   VLO: "VLO",
+  VRT: "VRT",
   VRTX: "VRTX",
   VST: "VST",
   WDC: "WDC",
