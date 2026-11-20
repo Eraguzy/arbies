@@ -57,7 +57,6 @@ export const PacificaPairRegistry: Record<string, AssetValues> = {
     "PUMP": ArbiesAssets.PUMP,
     "SAMSUNG": ArbiesAssets.SAMSUNG,
     "SKHYNIX": ArbiesAssets.SKHYNIX,
-    "SNDK": ArbiesAssets.SNDK,
     "SOL": ArbiesAssets.SOL,
     "SP500": ArbiesAssets.SPY500,
     "SPCX": ArbiesAssets.SPCX,
@@ -84,6 +83,7 @@ export const PacificaPairRegistry: Record<string, AssetValues> = {
     "ZK": ArbiesAssets.ZK,
     "ZRO": ArbiesAssets.ZRO,
     "XTEN": ArbiesAssets.XTEN,
+    "ANT": ArbiesAssets.ANTHROPIC,
 }
 
 const PacificaApiUrl = "https://api.pacifica.fi/api/v1";
