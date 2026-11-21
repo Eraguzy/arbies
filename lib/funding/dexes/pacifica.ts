@@ -84,6 +84,7 @@ export const PacificaPairRegistry: Record<string, AssetValues> = {
     "ZK": ArbiesAssets.ZK,
     "ZRO": ArbiesAssets.ZRO,
     "XTEN": ArbiesAssets.XTEN,
+    "ANT": ArbiesAssets.ANTHROPIC,
 }
 
 const PacificaApiUrl = "https://api.pacifica.fi/api/v1";
