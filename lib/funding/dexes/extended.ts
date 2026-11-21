@@ -347,6 +347,7 @@ export const ExtndPairRegistry: Record<string, AssetValues> = {
   "ANTHROP-USD": ArbiesAssets.ANTHROPIC,
 }
 
+// return extended's raw string from the local assetvalue
 export function getExtendedPair(asset: AssetValues): string | undefined {
   return Object.entries(ExtndPairRegistry).find((entry) => entry[1] === asset)?.[0]
 }
@@ -388,9 +389,10 @@ export const ExtndDex = {
       return NextResponse.json({ error: "no valid pairs provided" }, { status: 400 });
     }
 
+    // fetch all markets and filter locally
+    // a ?market= filter over 2048 chars gets 403
     const res = await fetch(
-      ExtndApiUrl + ExtndApiUrlEndpoints.markets
-      + "?market=" + extndPairs.join("&market="),
+      ExtndApiUrl + ExtndApiUrlEndpoints.markets,
       {
         method: "GET",
         headers: { accept: "application/json" },
@@ -404,12 +406,14 @@ export const ExtndDex = {
       return NextResponse.json({ error: "No data found" }, { status: 404 });
     }
 
-    const assetsAndFundings: AssetAndFdg[] = data.data.map((universe: ExtndData) => {
-      return {
-        name: ExtndPairRegistry[universe.name],
-        funding: annualizeHourlyFunding(universe.marketStats.fundingRate),
-      };
-    });
+    const assetsAndFundings: AssetAndFdg[] = data.data
+      .filter((universe: ExtndData) => extndPairs.includes(universe.name))
+      .map((universe: ExtndData) => {
+        return {
+          name: ExtndPairRegistry[universe.name],
+          funding: annualizeHourlyFunding(universe.marketStats.fundingRate),
+        };
+      });
 
     return NextResponse.json(assetsAndFundings);
   },
