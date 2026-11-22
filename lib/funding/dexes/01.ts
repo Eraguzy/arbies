@@ -63,7 +63,7 @@ const ZoApiUrlEndpoints = {
 const ZoApiRatePerSec = 100; // hypothetic, undocumented
 const ZoApiRateMs = 1000;
 const ZoFetchTimestamps: number[] = [];
-async function ZoFetchoor(url: string, options: RequestInit) {
+async function ZoFetchoor(url: string, options: RequestInit): Promise<Response> {
 	while (true) {
 		const now = Date.now();
 
@@ -86,7 +86,10 @@ async function getIdsAndTickers(assets: AssetValues[]): Promise<Map<number, keyo
 	return ZoFetchoor(
 		ZoApiUrl + ZoApiUrlEndpoints.info,
 		{ method: 'GET',	/* headers: { accept: 'application/json' },*/ },
-	).then(res => res.json())
+	).then(res => {
+		if (!res.ok) throw new Error(`01 /info: HTTP ${res.status}`);
+		return res.json();
+	})
 		.then(data => {
 			if (!data || !data.markets || data.markets.length === 0) {
 				return new Map();
@@ -116,7 +119,14 @@ export const ZoDex = {
 		const pairs: AssetValues[] = (searchParams.get(HTTPParams.assets)?.split(',') as AssetValues[]) || [];
 
 		// get Zo ids
-		const idsAndTickers = await getIdsAndTickers(pairs);
+		// without them no funding can be fetched: any failure here fails the whole route
+		let idsAndTickers: Map<number, keyof typeof ZoPairRegistry>;
+		try {
+			idsAndTickers = await getIdsAndTickers(pairs);
+		} catch (err) {
+			console.error("01: failed to fetch markets info:", err);
+			return NextResponse.json({ error: "01 API unavailable" }, { status: 502 });
+		}
 		const settled = await Promise.allSettled(
 			Array.from(idsAndTickers.entries()).map(
 				([id, ticker]) => ZoFetchoor(
