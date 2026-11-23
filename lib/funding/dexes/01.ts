@@ -5,7 +5,7 @@ import type { Dex } from "@/lib/funding/dexes/arbies"
 import { HTTPParams } from '@/app/api/req-params';
 import { AssetAndFdg } from "@/app/api/funding/utils"
 import { annualizeHourlyFunding } from '@/app/api/funding/utils';
-import { wait } from '@/lib/funding/misc';
+import { wait, DexApiError, fetchDexJSON, settledToFundings } from '@/lib/funding/misc';
 
 // match 01 pairs with the local registry ; they are mapped by ids on the api
 const ZoPairRegistry: Record<string, AssetValues> = {
@@ -60,10 +60,12 @@ const ZoApiUrlEndpoints = {
 }
 
 // api req throttling, supposedly 100 req/sec
-const ZoApiRatePerSec = 100; // hypothetic, undocumented
-const ZoApiRateMs = 1000;
 const ZoFetchTimestamps: number[] = [];
-async function ZoFetchoor(url: string, options: RequestInit): Promise<Response> {
+async function ZoFetchoor(url: string, options: RequestInit) {
+	const ZoApiRatePerSec = 100; // hypothetic, undocumented
+	const ZoApiRateMs = 1000;
+	const ZoApiTimeoutMs = 5000;
+
 	while (true) {
 		const now = Date.now();
 
@@ -73,7 +75,7 @@ async function ZoFetchoor(url: string, options: RequestInit): Promise<Response> 
 
 		if (ZoFetchTimestamps.length < ZoApiRatePerSec) { // if under rate limit, fetch
 			ZoFetchTimestamps.push(now);
-			return fetch(url, options);
+			return fetchDexJSON(ZoDex.Name, url, options, ZoApiTimeoutMs);
 		}
 
 		await wait(ZoApiRateMs - (now - ZoFetchTimestamps[0])); // wait until oldest is out rate limit window
@@ -85,28 +87,22 @@ async function ZoFetchoor(url: string, options: RequestInit): Promise<Response> 
 async function getIdsAndTickers(assets: AssetValues[]): Promise<Map<number, keyof typeof ZoPairRegistry>> {
 	return ZoFetchoor(
 		ZoApiUrl + ZoApiUrlEndpoints.info,
-		{ method: 'GET',	/* headers: { accept: 'application/json' },*/ },
-	).then(res => {
-		if (!res.ok) throw new Error(`01 /info: HTTP ${res.status}`);
-		return res.json();
-	})
-		.then(data => {
-			if (!data || !data.markets || data.markets.length === 0) {
-				return new Map();
-			}
+		{ method: 'GET' },
+	).then(data => {
+		if (!data || !data.markets || data.markets.length === 0) return new Map();
 
-			const ids: Map<number, keyof typeof ZoPairRegistry> = new Map();
-			for (const listing of data.markets) {
-				if (assets.includes(ZoPairRegistry[listing.symbol])) {
-					ids.set(listing.marketId, listing.symbol);
-				}
+		const ids: Map<number, keyof typeof ZoPairRegistry> = new Map();
+		for (const listing of data.markets) {
+			if (assets.includes(ZoPairRegistry[listing.symbol])) {
+				ids.set(listing.marketId, listing.symbol);
 			}
+		}
 
-			return ids;
-		});
+		return ids;
+	});
 }
 
-export const ZoDex = {
+export const ZoDex: Dex = {
 	Name: "01",
 	PairRegistry: ZoPairRegistry,
 	ApiUrl: "https://zo-mainnet.n1.xyz",
@@ -124,7 +120,12 @@ export const ZoDex = {
 		try {
 			idsAndTickers = await getIdsAndTickers(pairs);
 		} catch (err) {
+			if (!(err instanceof DexApiError)) throw err; // error on arbies side
+
 			console.error("01: failed to fetch markets info:", err);
+			if (err.kind === "timeout") {
+				return NextResponse.json({ error: "01 API timed out" }, { status: 504 });
+			}
 			return NextResponse.json({ error: "01 API unavailable" }, { status: 502 });
 		}
 		const settled = await Promise.allSettled(
@@ -132,21 +133,30 @@ export const ZoDex = {
 				([id, ticker]) => ZoFetchoor(
 					ZoApiUrl + ZoApiUrlEndpoints.stats(id),
 					{ method: 'GET' }
-				).then(res => res.json())
-					.then(data => {
-						if (!data?.perpStats?.funding_rate) return null;
+				).then(data => {
+					if (!Number.isFinite(data?.perpStats?.funding_rate)) return null; // null if no funding rate in response
 
-						return {
-							name: ZoPairRegistry[ticker], // get the local ticker name from id
-							funding: annualizeHourlyFunding(data.perpStats.funding_rate), // it's already annualized as a rate in api
-						} satisfies AssetAndFdg;
-					})
+					return {
+						name: ZoPairRegistry[ticker], // get the local ticker name from id
+						funding: annualizeHourlyFunding(data.perpStats.funding_rate), // it's already annualized as a rate in api
+					} satisfies AssetAndFdg;
+				})
 			)
 		);
 
-		const assetsAndFundings = settled
-			.filter((r): r is PromiseFulfilledResult<AssetAndFdg | null> => r.status === 'fulfilled') // keep only fulfilled promises
-			.map(r => r.value) // keep values from promises
+		let fundings: (AssetAndFdg | null)[];
+		try {
+			fundings = settledToFundings(ZoDex.Name, settled);
+		} catch (err) {
+			if (!(err instanceof DexApiError)) throw err; // error on arbies side
+
+			if (err.kind === "timeout") {
+				return NextResponse.json({ error: "01 API timed out" }, { status: 504 });
+			}
+			return NextResponse.json({ error: "01 API unavailable" }, { status: 502 });
+		}
+
+		const assetsAndFundings = fundings
 			.filter((v): v is AssetAndFdg => v !== null); // filter out null values
 
 		return NextResponse.json(assetsAndFundings);
@@ -155,4 +165,4 @@ export const ZoDex = {
 	GetHstyFunding() {
 		return undefined;
 	},
-} satisfies Dex
+} 

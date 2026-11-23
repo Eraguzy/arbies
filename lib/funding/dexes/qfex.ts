@@ -243,7 +243,7 @@ const QfexApiUrlEndpoints = {
   fundingHsty: "/funding",
 };
 
-export const QFEXDex = {
+export const QFEXDex: Dex = {
   Name: "QFEX",
   PairRegistry: QFEXPairRegistry,
   ApiUrl: QfexApiUrl,
@@ -277,4 +277,4 @@ export const QFEXDex = {
   GetHstyFunding() {
     return undefined;
   },
-} satisfies Dex
+}

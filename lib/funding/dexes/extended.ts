@@ -367,7 +367,7 @@ type ExtndData = {
   };
 };
 
-export const ExtndDex = {
+export const ExtndDex: Dex = {
   Name: "Extended",
   PairRegistry: ExtndPairRegistry,
   ApiUrl: ExtndApiUrl,
@@ -421,4 +421,4 @@ export const ExtndDex = {
   GetHstyFunding() {
     return undefined;
   },
-} satisfies Dex
+}

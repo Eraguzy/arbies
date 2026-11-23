@@ -225,7 +225,7 @@ type LighterData = {
   rate: number;
 };
 
-export const LighterDex = {
+export const LighterDex: Dex = {
   Name: "Lighter",
   PairRegistry: LighterPairRegistry,
   ApiUrl: LgtrApiUrl,
@@ -265,4 +265,4 @@ export const LighterDex = {
   GetHstyFunding() {
     return undefined;
   },
-} satisfies Dex
+}

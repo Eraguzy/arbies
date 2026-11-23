@@ -595,7 +595,7 @@ type VariData = {
     funding_rate: number;
 };
 
-export const VariDex = {
+export const VariDex: Dex = {
     Name: "Variational",
     PairRegistry: VariPairRegistry,
     ApiUrl: VariApiUrl,
@@ -632,4 +632,4 @@ export const VariDex = {
     GetHstyFunding() {
         return undefined;
     },
-} satisfies Dex
+}
