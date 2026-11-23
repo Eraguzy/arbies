@@ -88,7 +88,7 @@ const ParadexApiUrlEndpoints = {
 
 const ParadexApiRatePerSec = 120
 
-export const ParadexDex = {
+export const ParadexDex: Dex = {
   Name: "Paradex",
   PairRegistry: ParadexPairRegistry,
   ApiUrl: ParadexApiUrl,
@@ -139,4 +139,4 @@ export const ParadexDex = {
   GetHstyFunding() {
     return undefined;
   },
-} satisfies Dex
+}

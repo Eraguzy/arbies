@@ -117,7 +117,7 @@ function getExpectedFundingRates(): Promise<RisexExpectedFundingRate[]> {
 	});
 }
 
-export const RisexDex = {
+export const RisexDex: Dex = {
 	Name: "RISEx",
 	PairRegistry: RisexPairRegistry,
 	ApiUrl: RisexApiUrl,
@@ -168,4 +168,4 @@ export const RisexDex = {
 	GetHstyFunding() {
 		return undefined;
 	},
-} satisfies Dex
+}

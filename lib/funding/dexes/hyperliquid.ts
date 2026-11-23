@@ -195,7 +195,7 @@ type HLData = {
   name: string;
 };
 
-export const HLDex = {
+export const HLDex: Dex = {
   Name: "Hyperliquid",
   PairRegistry: HLPairRegistry,
   ApiUrl: HLApiUrl,
@@ -237,4 +237,4 @@ export const HLDex = {
   GetHstyFunding() {
     return undefined;
   },
-} satisfies Dex
+}

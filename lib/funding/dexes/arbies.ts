@@ -42,15 +42,16 @@ export type Dex = {
   GetHstyFunding: (request: NextRequest) => unknown // not designed yet
 }
 
-export const AllDexes: Record<DexName, Dex> = {
-  [HLDex.Name]: HLDex,
-  [LighterDex.Name]: LighterDex,
-  [QFEXDex.Name]: QFEXDex,
-  [ExtndDex.Name]: ExtndDex,
-  [VariDex.Name]: VariDex,
-  [PacificaDex.Name]: PacificaDex,
-  [MeridianDex.Name]: MeridianDex,
-  [ParadexDex.Name]: ParadexDex,
-  [ZoDex.Name]: ZoDex,
-  [RisexDex.Name]: RisexDex,
-};
+const dexList: Dex[] = [
+  HLDex,
+  LighterDex,
+  QFEXDex,
+  ExtndDex,
+  VariDex,
+  PacificaDex,
+  MeridianDex,
+  ParadexDex,
+  ZoDex,
+  RisexDex,
+];
+export const AllDexes = Object.fromEntries(dexList.map((dex) => [dex.Name, dex])) as Record<DexName, Dex>;

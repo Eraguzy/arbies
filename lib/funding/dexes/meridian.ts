@@ -55,7 +55,7 @@ async function getIdsAndTickers(assets: AssetValues[]): Promise<Map<string, keyo
   return ids;
 }
 
-export const MeridianDex = {
+export const MeridianDex: Dex = {
   Name: "Meridian",
   PairRegistry: MeridianPairRegistry,
   ApiUrl: MeridianApiUrl,
@@ -99,4 +99,4 @@ export const MeridianDex = {
   GetHstyFunding() {
     return undefined;
   },
-} satisfies Dex
+}

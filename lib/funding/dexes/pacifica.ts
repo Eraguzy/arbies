@@ -98,7 +98,7 @@ type PacificaData = {
     next_funding_rate: number;
 };
 
-export const PacificaDex = {
+export const PacificaDex: Dex = {
     Name: "Pacifica",
     PairRegistry: PacificaPairRegistry,
     ApiUrl: PacificaApiUrl,
@@ -138,4 +138,4 @@ export const PacificaDex = {
     GetHstyFunding() {
         return undefined;
     },
-} satisfies Dex
+}
