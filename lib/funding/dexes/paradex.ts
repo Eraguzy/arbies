@@ -72,6 +72,7 @@ export const ParadexPairRegistry: Record<string, AssetValues> = {
   "XPT-USD-PERP": ArbiesAssets.XPT,
   "XRP-USD-PERP": ArbiesAssets.XRP,
   "ZEC-USD-PERP": ArbiesAssets.ZEC,
+  "ANT-USD-PERP": ArbiesAssets.ANTHROPIC,
 }
 
 // find key from value, return first elem
