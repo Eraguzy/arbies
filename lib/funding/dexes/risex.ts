@@ -62,6 +62,9 @@ export const RisexPairRegistry: Record<string, AssetValues> = {
 	"AMD/USDC": ArbiesAssets.AMD,
 	"AMZN/USDC": ArbiesAssets.AMZN,
 	"ETHFI/USDC": ArbiesAssets.ETHFI,
+	"ANT/USDC": ArbiesAssets.ANTHROPIC,
+	"AAPL/USDC": ArbiesAssets.AAPL,
+	"NBIS/USDC": ArbiesAssets.NBIS,
 }
 
 const RisexApiUrl = "https://api.rise.trade/v1";

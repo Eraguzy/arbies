@@ -190,7 +190,6 @@ export const LighterPairRegistry: Record<string, AssetValues> = {
   "MRNA": ArbiesAssets.MRNA,
   "ORCL": ArbiesAssets.ORCL,
   "MRVL": ArbiesAssets.MRVL,
-  "ANTHROPIC": ArbiesAssets.ANTHROPIC,
   "TTWO": ArbiesAssets.TTWO,
   "SPCX": ArbiesAssets.SPCX,
   "TENCENT": ArbiesAssets.TENCENT,
@@ -208,6 +207,8 @@ export const LighterPairRegistry: Record<string, AssetValues> = {
   "AVGO": ArbiesAssets.AVGO,
   "BE": ArbiesAssets.BE,
   "GME": ArbiesAssets.GME,
+  "ANT": ArbiesAssets.ANTHROPIC,
+  "VARIATIONAL": ArbiesAssets.VARIATIONAL,
 }
 
 const LgtrApiUrl = "https://mainnet.zklighter.elliot.ai/api/v1";
