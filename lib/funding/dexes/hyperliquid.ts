@@ -3,6 +3,7 @@ import { HTTPParams } from "@/app/api/req-params"
 import { AssetAndFdg, annualizeHourlyFunding } from "@/app/api/funding/utils"
 import type { Dex } from "@/lib/funding/dexes/arbies"
 import { NextRequest, NextResponse } from "next/server"
+import { DexApiError, fetchDexJSON, dexErrorCatcher } from "@/lib/funding/misc"
 
 // match HL pairs with the local registry 
 export const HLPairRegistry: Record<string, AssetValues> = {
@@ -204,30 +205,37 @@ export const HLDex: Dex = {
   async GetCurrentFunding(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const pairs = searchParams.get(HTTPParams.assets)?.split(",") || [];
+    const HLApiTimeoutMs = 5000;
 
-    const res = await fetch(
-      HLApiUrl,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    let data;
+    try {
+      data = await fetchDexJSON(
+        HLDex.Name,
+        HLApiUrl,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            type: "metaAndAssetCtxs",
+            dex: "",
+          }),
         },
-        body: JSON.stringify({
-          type: "metaAndAssetCtxs",
-          dex: "",
-        }),
+        HLApiTimeoutMs,
+      );
+      if (!data || !Array.isArray(data[0]?.universe) || !Array.isArray(data[1])) {
+        throw new DexApiError(HLDex.Name, HLApiUrl, "invalid-data");
       }
-    );
-    const data = await res.json();
-    if (!data || !data[0] || !data[1]) {
-      return NextResponse.json({ error: "No data found" }, { status: 404 });
+    } catch (err) {
+      return dexErrorCatcher(HLDex.Name, err);
     }
 
     const assetsAndFundings: AssetAndFdg[] = data[0].universe.map(
       (universe: HLData, index: number) => {
         return {
           name: HLPairRegistry[universe.name],
-          funding: annualizeHourlyFunding(data[1][index].funding),
+          funding: annualizeHourlyFunding(Number(data[1][index].funding)),
         };
       });
 

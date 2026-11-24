@@ -3,6 +3,7 @@ import { HTTPParams } from "@/app/api/req-params"
 import { AssetAndFdg, annualizeHourlyFunding } from "@/app/api/funding/utils"
 import type { Dex } from "@/lib/funding/dexes/arbies"
 import { NextRequest, NextResponse } from "next/server"
+import { DexApiError, fetchDexJSON, dexErrorCatcher } from "@/lib/funding/misc"
 
 // match Meridian pairs with the local registry
 export const MeridianPairRegistry: Record<string, AssetValues> = {
@@ -28,22 +29,27 @@ const MeridianApiUrlEndpoints = {
   projectedFunding: "/funding/projected-rate",
 };
 
+const MeridianApiTimeoutMs = 5000;
+
 type MeridianData = {
   productId: string;
-  fundingRateProjected1h: number;
+  fundingRateProjected1h: string;
 };
 
+/** @throws DexApiError */
 async function getIdsAndTickers(assets: AssetValues[]): Promise<Map<string, keyof typeof MeridianPairRegistry>> {
-  const res = await fetch(
-    MeridianApiUrl + MeridianApiUrlEndpoints.product,
+  const url = MeridianApiUrl + MeridianApiUrlEndpoints.product;
+  const data = await fetchDexJSON(
+    MeridianDex.Name,
+    url,
     {
       method: "GET",
       headers: { accept: "application/json" },
-    }
+    },
+    MeridianApiTimeoutMs,
   );
-  const data = await res.json();
-  if (!data || !data.data || data.data.length === 0) {
-    return new Map();
+  if (!data || !Array.isArray(data.data)) {
+    throw new DexApiError(MeridianDex.Name, url, "invalid-data");
   }
 
   const ids: Map<string, keyof typeof MeridianPairRegistry> = new Map();
@@ -65,30 +71,46 @@ export const MeridianDex: Dex = {
     const { searchParams } = new URL(request.url);
     const pairs: AssetValues[] = (searchParams.get(HTTPParams.assets)?.split(",") as AssetValues[]) || [];
 
-    const idsAndTickers = await getIdsAndTickers(pairs);
-
-    const res = await fetch(
-      MeridianApiUrl + MeridianApiUrlEndpoints.projectedFunding
-      + "?productIds=" + Array.from(idsAndTickers.keys()).join("&productIds="),
-      {
-        method: "GET",
-        headers: { accept: "application/json" },
-      }
-    );
-    const data = await res.json();
-    if (!data || !data.data || data.data.length === 0) {
-      return NextResponse.json({ error: "No data found" }, { status: 404 });
+    // without ids no funding can be fetched: any failure here fails the whole route
+    let idsAndTickers: Map<string, keyof typeof MeridianPairRegistry>;
+    try {
+      idsAndTickers = await getIdsAndTickers(pairs);
+    } catch (err) {
+      console.error(MeridianDex.Name + ": failed to fetch products:", err);
+      return dexErrorCatcher(MeridianDex.Name, err);
+    }
+    if (idsAndTickers.size === 0) {
+      return NextResponse.json<AssetAndFdg[]>([]);
     }
 
-    const assetsAndFundings: AssetAndFdg[] = data.data
+    const url = MeridianApiUrl + MeridianApiUrlEndpoints.projectedFunding
+      + "?productIds=" + Array.from(idsAndTickers.keys()).join("&productIds=");
+    let result;
+    try {
+      result = await fetchDexJSON(
+        MeridianDex.Name,
+        url,
+        {
+          method: "GET",
+          headers: { accept: "application/json" },
+        },
+        MeridianApiTimeoutMs,
+      );
+      if (!result || !Array.isArray(result.data)) {
+        throw new DexApiError(MeridianDex.Name, url, "invalid-data");
+      }
+    } catch (err) {
+      return dexErrorCatcher(MeridianDex.Name, err);
+    }
+
+    const assetsAndFundings: AssetAndFdg[] = result.data
       .filter((listing: MeridianData) => pairs.includes(MeridianPairRegistry[idsAndTickers.get(listing.productId)!]))
       .map((universe: MeridianData) => {
-        if (!idsAndTickers.has(universe.productId)) {
-          return null;
-        }
+        if (!idsAndTickers.has(universe.productId)) return null;
+
         return {
           name: MeridianPairRegistry[idsAndTickers.get(universe.productId)!],
-          funding: annualizeHourlyFunding(universe.fundingRateProjected1h),
+          funding: annualizeHourlyFunding(Number(universe.fundingRateProjected1h)),
         };
       })
       .filter((value: AssetAndFdg | null): value is AssetAndFdg => value !== null);

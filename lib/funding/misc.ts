@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 import type { DexName } from "@/lib/funding/dexes/arbies";
 
 export function wait(ms: number) {
@@ -5,7 +7,8 @@ export function wait(ms: number) {
 }
 
 // how a call to a DEX api failed
-type DexApiErrorKind = "timeout" | "network" | "http" | "invalid-json";
+// invalid-data: valid json but unexpected shape
+type DexApiErrorKind = "timeout" | "network" | "http" | "invalid-json" | "invalid-data";
 
 // map fetch / json error to DexApiError kind
 function errorKind(err: unknown): DexApiErrorKind {
@@ -80,4 +83,16 @@ export function settledToFundings<T>(dex: DexName, settled: PromiseSettledResult
   if (errors.length === settled.length) throw errors.find((err) => err.kind !== "timeout") ?? errors[0]; // every call failed: the dex is down
 
   return values;
+}
+
+/** map a dex api error to the route response
+ * @throws err if it is not a DexApiError 
+ */
+export function dexErrorCatcher(dex: DexName, err: unknown): NextResponse<{ error: string }> {
+  if (!(err instanceof DexApiError)) throw err; // error on arbies side
+
+  if (err.kind === "timeout") {
+    return NextResponse.json({ error: dex + " API timed out" }, { status: 504 });
+  }
+  return NextResponse.json({ error: dex + " API unavailable" }, { status: 502 });
 }
