@@ -707,6 +707,7 @@ export const ArbiesAssets = {
   PLTR: "PLTR",
   PLUG: "PLUG",
   PM: "PM",
+  POPMART: "POPMART",
   PRE: "PRE",
   PRLB: "PRLB",
   PRME: "PRME",
