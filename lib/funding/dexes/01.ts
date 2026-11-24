@@ -5,7 +5,7 @@ import type { Dex } from "@/lib/funding/dexes/arbies"
 import { HTTPParams } from '@/app/api/req-params';
 import { AssetAndFdg } from "@/app/api/funding/utils"
 import { annualizeHourlyFunding } from '@/app/api/funding/utils';
-import { wait, DexApiError, fetchDexJSON, settledToFundings } from '@/lib/funding/misc';
+import { wait, DexApiError, fetchDexJSON, settledToFundings, dexErrorCatcher } from '@/lib/funding/misc';
 
 // match 01 pairs with the local registry ; they are mapped by ids on the api
 const ZoPairRegistry: Record<string, AssetValues> = {
@@ -89,7 +89,9 @@ async function getIdsAndTickers(assets: AssetValues[]): Promise<Map<number, keyo
 		ZoApiUrl + ZoApiUrlEndpoints.info,
 		{ method: 'GET' },
 	).then(data => {
-		if (!data || !data.markets || data.markets.length === 0) return new Map();
+		if (!data || !Array.isArray(data.markets)) {
+			throw new DexApiError(ZoDex.Name, ZoApiUrl + ZoApiUrlEndpoints.info, "invalid-data");
+		}
 
 		const ids: Map<number, keyof typeof ZoPairRegistry> = new Map();
 		for (const listing of data.markets) {
@@ -120,13 +122,7 @@ export const ZoDex: Dex = {
 		try {
 			idsAndTickers = await getIdsAndTickers(pairs);
 		} catch (err) {
-			if (!(err instanceof DexApiError)) throw err; // error on arbies side
-
-			console.error("01: failed to fetch markets info:", err);
-			if (err.kind === "timeout") {
-				return NextResponse.json({ error: "01 API timed out" }, { status: 504 });
-			}
-			return NextResponse.json({ error: "01 API unavailable" }, { status: 502 });
+			return dexErrorCatcher(ZoDex.Name, err);
 		}
 		const settled = await Promise.allSettled(
 			Array.from(idsAndTickers.entries()).map(
@@ -148,12 +144,7 @@ export const ZoDex: Dex = {
 		try {
 			fundings = settledToFundings(ZoDex.Name, settled);
 		} catch (err) {
-			if (!(err instanceof DexApiError)) throw err; // error on arbies side
-
-			if (err.kind === "timeout") {
-				return NextResponse.json({ error: "01 API timed out" }, { status: 504 });
-			}
-			return NextResponse.json({ error: "01 API unavailable" }, { status: 502 });
+			return dexErrorCatcher(ZoDex.Name, err);
 		}
 
 		const assetsAndFundings = fundings

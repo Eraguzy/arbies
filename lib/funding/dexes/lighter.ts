@@ -3,6 +3,7 @@ import { HTTPParams } from "@/app/api/req-params"
 import { AssetAndFdg, annualize8HourlyFunding } from "@/app/api/funding/utils"
 import type { Dex } from "@/lib/funding/dexes/arbies"
 import { NextRequest, NextResponse } from "next/server"
+import { DexApiError, fetchDexJSON, dexErrorCatcher } from "@/lib/funding/misc"
 
 // match Lighter pairs with the local registry ; they are mapped by ids on the api
 export const LighterPairRegistry: Record<string, AssetValues> = {
@@ -234,17 +235,25 @@ export const LighterDex: Dex = {
   async GetCurrentFunding(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const pairs = searchParams.get(HTTPParams.assets)?.split(",") || [];
+    const LgtrApiTimeoutMs = 5000;
 
-    const res = await fetch(
-      LgtrApiUrl + LgtrApiUrlEndpoints.fundingRates,
-      {
-        method: "GET",
-        headers: { accept: "application/json" },
+    const url = LgtrApiUrl + LgtrApiUrlEndpoints.fundingRates;
+    let data;
+    try {
+      data = await fetchDexJSON(
+        LighterDex.Name,
+        url,
+        {
+          method: "GET",
+          headers: { accept: "application/json" },
+        },
+        LgtrApiTimeoutMs,
+      );
+      if (!data || !Array.isArray(data.funding_rates)) {
+        throw new DexApiError(LighterDex.Name, url, "invalid-data");
       }
-    );
-    const data = await res.json();
-    if (!data) {
-      return NextResponse.json({ error: "No data found" }, { status: 404 });
+    } catch (err) {
+      return dexErrorCatcher(LighterDex.Name, err);
     }
 
     const assetsAndFundings: AssetAndFdg[] = data.funding_rates
