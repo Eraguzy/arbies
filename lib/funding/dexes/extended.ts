@@ -3,6 +3,7 @@ import { HTTPParams } from "@/app/api/req-params"
 import { AssetAndFdg, annualizeHourlyFunding } from "@/app/api/funding/utils"
 import type { Dex } from "@/lib/funding/dexes/arbies"
 import { NextRequest, NextResponse } from "next/server"
+import { DexApiError, fetchDexJSON, dexErrorCatcher } from "@/lib/funding/misc"
 
 // match Extended pairs with the local registry ; they are mapped by ids on the api
 export const ExtndPairRegistry: Record<string, AssetValues> = {
@@ -363,7 +364,7 @@ const ExtndApiUrlEndpoints = {
 type ExtndData = {
   name: string;
   marketStats: {
-    fundingRate: number;
+    fundingRate: string;
   };
 };
 
@@ -391,27 +392,38 @@ export const ExtndDex: Dex = {
 
     // fetch all markets and filter locally
     // a ?market= filter over 2048 chars gets 403
-    const res = await fetch(
-      ExtndApiUrl + ExtndApiUrlEndpoints.markets,
-      {
-        method: "GET",
-        headers: { accept: "application/json" },
+    const ExtndApiTimeoutMs = 5000;
+    const url = ExtndApiUrl + ExtndApiUrlEndpoints.markets;
+    let result;
+    try {
+      result = await fetchDexJSON(
+        ExtndDex.Name,
+        url,
+        {
+          method: "GET",
+          headers: { accept: "application/json" },
+        },
+        ExtndApiTimeoutMs,
+      );
+      if (!result) {
+        throw new DexApiError(ExtndDex.Name, url, "invalid-data");
       }
-    );
-    const data = await res.json();
-    if (data.status !== "ok" && data.status !== "OK") {
-      return NextResponse.json({ error: "status is invalid" }, { status: 500 });
-    }
-    if (!data || !data.data || data.data.length === 0) {
-      return NextResponse.json({ error: "No data found" }, { status: 404 });
+      if (result.status !== "ok" && result.status !== "OK") {
+        return NextResponse.json({ error: ExtndDex.Name + ": " + result.error?.message + " (" + result.error?.code + ")" }, { status: 502 });
+      }
+      if (!Array.isArray(result.data) || result.data.length === 0) {
+        throw new DexApiError(ExtndDex.Name, url, "invalid-data");
+      }
+    } catch (err) {
+      return dexErrorCatcher(ExtndDex.Name, err);
     }
 
-    const assetsAndFundings: AssetAndFdg[] = data.data
+    const assetsAndFundings: AssetAndFdg[] = result.data
       .filter((universe: ExtndData) => extndPairs.includes(universe.name))
       .map((universe: ExtndData) => {
         return {
           name: ExtndPairRegistry[universe.name],
-          funding: annualizeHourlyFunding(universe.marketStats.fundingRate),
+          funding: annualizeHourlyFunding(Number(universe.marketStats.fundingRate)),
         };
       });
 

@@ -2,6 +2,7 @@ import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
 import { annualizeHourlyQFEXFunding, AssetAndFdg } from "@/app/api/funding/utils"
 import type { Dex } from "@/lib/funding/dexes/arbies"
 import { NextRequest, NextResponse } from "next/server"
+import { DexApiError, fetchDexJSON, dexErrorCatcher } from "@/lib/funding/misc"
 
 // match QFEX pairs with the local registry
 export const QFEXPairRegistry: Record<string, AssetValues> = {
@@ -250,15 +251,22 @@ export const QFEXDex: Dex = {
 
   async GetCurrentFunding(request: NextRequest) {
     void request;
+    const QfexApiTimeoutMs = 5000;
 
-    const res = await fetch(
-      QfexApiUrl + QfexApiUrlEndpoints.mdContracts,
-      { method: "GET", headers: { accept: "application/json" } },
-    );
-
-    const data = await res.json();
-    if (!data || !data.data) {
-      return NextResponse.json({ error: "No data found" }, { status: 404 });
+    const url = QfexApiUrl + QfexApiUrlEndpoints.mdContracts;
+    let data;
+    try {
+      data = await fetchDexJSON(
+        QFEXDex.Name,
+        url,
+        { method: "GET", headers: { accept: "application/json" } },
+        QfexApiTimeoutMs,
+      );
+      if (!data || !Array.isArray(data.data)) {
+        throw new DexApiError(QFEXDex.Name, url, "invalid-data");
+      }
+    } catch (err) {
+      return dexErrorCatcher(QFEXDex.Name, err);
     }
 
     const fundingData: AssetAndFdg[] = [];

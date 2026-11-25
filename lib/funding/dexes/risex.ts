@@ -3,6 +3,7 @@ import { HTTPParams } from "@/app/api/req-params"
 import { AssetAndFdg, annualizeHourlyFunding } from "@/app/api/funding/utils"
 import type { Dex } from "@/lib/funding/dexes/arbies"
 import { NextRequest, NextResponse } from "next/server"
+import { DexApiError, fetchDexJSON, dexErrorCatcher } from "@/lib/funding/misc"
 
 // match RISEx pairs with the local registry
 export const RisexPairRegistry: Record<string, AssetValues> = {
@@ -87,13 +88,20 @@ type RisexExpectedFundingRate = {
 };
 
 // one-shot ws : subscribe to the expected funding rates, wait for the first update (~5s), then close
-function getExpectedFundingRates(): Promise<RisexExpectedFundingRate[]> {
+/** @throws DexApiError */
+function getExpectedFundingRates(timeoutMs: number): Promise<RisexExpectedFundingRate[]> {
 	return new Promise((resolve, reject) => {
 		const ws = new WebSocket(RisexWsUrl);
+
 		const timeout = setTimeout(() => {
 			ws.close();
-			reject(new Error("RISEx ws timeout"));
-		}, 10000);
+			reject(new DexApiError(RisexDex.Name, RisexWsUrl, "timeout"));
+		}, timeoutMs);
+		const fail = (err: DexApiError) => {
+			clearTimeout(timeout);
+			ws.close();
+			reject(err);
+		};
 
 		ws.onopen = () => {
 			ws.send(JSON.stringify({
@@ -102,17 +110,30 @@ function getExpectedFundingRates(): Promise<RisexExpectedFundingRate[]> {
 			}));
 		};
 		ws.onmessage = (event) => {
-			const msg = JSON.parse(event.data);
+			let msg;
+			try {
+				msg = JSON.parse(event.data);
+			} catch (err) {
+				fail(new DexApiError(RisexDex.Name, RisexWsUrl, "invalid-json", { cause: err }));
+				return;
+			}
+
 			if (msg.channel === "expected_funding_rate" && msg.type === "update") {
+				if (!Array.isArray(msg.data)) {
+					fail(new DexApiError(RisexDex.Name, RisexWsUrl, "invalid-data"));
+					return;
+				}
+
 				clearTimeout(timeout);
 				ws.close();
 				resolve(msg.data);
 			}
 		};
-		ws.onerror = () => {
-			clearTimeout(timeout);
-			ws.close();
-			reject(new Error("RISEx ws error"));
+		ws.onerror = (event) => {
+			fail(new DexApiError(RisexDex.Name, RisexWsUrl, "network", { cause: event }));
+		};
+		ws.onclose = () => { // closed by the server before the first update
+			fail(new DexApiError(RisexDex.Name, RisexWsUrl, "network"));
 		};
 	});
 }
@@ -127,20 +148,31 @@ export const RisexDex: Dex = {
 		const { searchParams } = new URL(request.url);
 		const pairs = searchParams.get(HTTPParams.assets)?.split(",") || [];
 
-		const [res, expectedRates] = await Promise.all([
-			fetch(
-				RisexApiUrl + RisexApiUrlEndpoints.markets,
-				{
-					method: "GET",
-					headers: { accept: "application/json" },
-				}
-			),
-			getExpectedFundingRates(), // ws => pairs market id and funding
-		]);
+		const RisexApiTimeoutMs = 5000;
+		const RisexWsTimeoutMs = 10000; // wait for the first ws message
 
-		const data = await res.json();
-		if (!data || !expectedRates) {
-			return NextResponse.json({ error: "No data found" }, { status: 404 });
+		const url = RisexApiUrl + RisexApiUrlEndpoints.markets;
+		let mktData;
+		let expectedRates: RisexExpectedFundingRate[];
+		try {
+			// both calls are mandatory: any failure fails the whole route
+			[mktData, expectedRates] = await Promise.all([
+				fetchDexJSON(
+					RisexDex.Name,
+					url,
+					{
+						method: "GET",
+						headers: { accept: "application/json" },
+					},
+					RisexApiTimeoutMs,
+				),
+				getExpectedFundingRates(RisexWsTimeoutMs),
+			]);
+			if (!mktData || !mktData.data || !Array.isArray(mktData.data.markets)) {
+				throw new DexApiError(RisexDex.Name, url, "invalid-data");
+			}
+		} catch (err) {
+			return dexErrorCatcher(RisexDex.Name, err);
 		}
 
 		const fundingById: Record<string, string> = {};
@@ -148,19 +180,19 @@ export const RisexDex: Dex = {
 			fundingById[rate.market_id] = rate.estimated_rate;
 		});
 
-		// find the funding corresponding to the market id in the record
-		const assetsAndFundings: AssetAndFdg[] = data.data.markets
-			.filter((universe: RisexData) =>
+		// match funding with mkt data
+		const assetsAndFundings: AssetAndFdg[] =
+			mktData.data.markets.filter((universe: RisexData) =>
 				universe.active &&
 				fundingById[universe.market_id] !== undefined &&
 				pairs.includes(RisexPairRegistry[universe.config.name])
 			)
-			.map((universe: RisexData) => {
-				return {
-					name: RisexPairRegistry[universe.config.name],
-					funding: annualizeHourlyFunding(Number(fundingById[universe.market_id])),
-				};
-			});
+				.map((universe: RisexData) => {
+					return {
+						name: RisexPairRegistry[universe.config.name],
+						funding: annualizeHourlyFunding(Number(fundingById[universe.market_id])),
+					};
+				});
 
 		return NextResponse.json(assetsAndFundings);
 	},

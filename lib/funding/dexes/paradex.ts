@@ -1,9 +1,9 @@
 import { ArbiesAssets, AssetValues } from "@/lib/funding/assets"
 import { HTTPParams } from "@/app/api/req-params"
-import { AssetAndFdg, annualize8HourlyFunding } from "@/app/api/funding/utils"
+import { AssetAndFdg, annualizeHourlyFunding } from "@/app/api/funding/utils"
 import type { Dex } from "@/lib/funding/dexes/arbies"
 import { NextRequest, NextResponse } from "next/server"
-import { wait } from "@/lib/funding/misc"
+import { DexApiError, fetchDexJSON, dexErrorCatcher } from "@/lib/funding/misc"
 
 // match paradex pairs with the local registry ; they are mapped by ids on the api
 export const ParadexPairRegistry: Record<string, AssetValues> = {
@@ -84,9 +84,14 @@ const ParadexApiUrl = "https://api.prod.paradex.trade/v1";
 
 const ParadexApiUrlEndpoints = {
   funding: "/funding/data",
+  marketsSummary: "/markets/summary",
 };
 
-const ParadexApiRatePerSec = 120
+type ParadexSummary = {
+  symbol: string;
+  funding_rate: string; // raw rate over the market funding interval
+  funding_interval_minutes: number;
+};
 
 export const ParadexDex: Dex = {
   Name: "Paradex",
@@ -96,42 +101,35 @@ export const ParadexDex: Dex = {
 
   async GetCurrentFunding(request: NextRequest) {
     const { searchParams } = new URL(request.url);
-    const pairs: AssetValues[] = searchParams
-      .get(HTTPParams.assets)
-      ?.split(",")
-      .map((p: string) => getParadexPair(p as AssetValues))
-      .filter((v): v is AssetValues => !!v) || [];
+    const pairs = searchParams.get(HTTPParams.assets)?.split(",") || [];
 
-    // paradex rate limit : 120 req/s
-    const settled: PromiseSettledResult<AssetAndFdg | null>[] = [];
-    for (let i = 0; i < pairs.length; i += ParadexApiRatePerSec) {
+    const ParadexApiTimeoutMs = 5000;
 
-      const start = performance.now();
-      settled.push(...await Promise.allSettled(
-        pairs.slice(i, i + ParadexApiRatePerSec).map(async (pair) => {
-          return fetch(
-            ParadexApiUrl + ParadexApiUrlEndpoints.funding + "?market=" + pair,
-            { method: "GET", headers: { accept: "application/json" } }
-          ).then((res) => res.json())
-            .then((data) => {
-              if (!data?.results?.length) return null;
-
-              return {
-                name: ParadexPairRegistry[pair],
-                funding: annualize8HourlyFunding(data.results[0].funding_rate),
-              } satisfies AssetAndFdg;
-            });
-        })
-      ));
-
-      if (i + ParadexApiRatePerSec < pairs.length)
-        await wait(Math.max(0, 1000 - (performance.now() - start)));
+    // fetch all perp markets in one call and filter locally
+    const url = ParadexApiUrl + ParadexApiUrlEndpoints.marketsSummary + "?market=ALL&asset_kind=PERP"; // dont fetch options
+    let result;
+    try {
+      result = await fetchDexJSON(
+        ParadexDex.Name,
+        url,
+        { method: "GET", headers: { accept: "application/json" } },
+        ParadexApiTimeoutMs,
+      );
+      if (!result || !Array.isArray(result.results)) {
+        throw new DexApiError(ParadexDex.Name, url, "invalid-data");
+      }
+    } catch (err) {
+      return dexErrorCatcher(ParadexDex.Name, err);
     }
 
-    const assetsAndFundings = settled
-      .filter((r): r is PromiseFulfilledResult<AssetAndFdg | null> => r.status === "fulfilled")
-      .map(r => r.value)
-      .filter((v): v is AssetAndFdg => v !== null);
+    const assetsAndFundings: AssetAndFdg[] = result.results
+      .filter((market: ParadexSummary) => pairs.includes(ParadexPairRegistry[market.symbol]))
+      .map((market: ParadexSummary) => {
+        return {
+          name: ParadexPairRegistry[market.symbol],
+          funding: annualizeHourlyFunding(Number(market.funding_rate) * 60 / market.funding_interval_minutes), // rate per interval to hourly rate
+        };
+      });
 
     return NextResponse.json(assetsAndFundings);
   },

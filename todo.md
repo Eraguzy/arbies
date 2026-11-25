@@ -6,6 +6,8 @@
 - vari swaps: not listed
   - indexes: `US500S`, `US100S`, `US30S`, `US2KS`, `US400S`, `USFNGS`, `CNA50S`, `TWIS`, `VXIP`, `DXIP`
   - commodities: `XAUS`, `XAGS`, `COPPP`, `USOILP`, `UKOILP`, `HOILP`, `GASOLP`, `COCOAP`
+- update vari api: `/metadata/stats` is legacy v1 (not recommended, may be stale, funding `0` placeholder for swaps)
+  - move to `/metadata/v2/stats`, funding in `funding.last.annualized_rate`
 - collateral/fx handling: pairs not listed because they are quoted in non-USD with no fx conversion
   - QFEX: `SAMSUNG-KRW`, `SKHYNIX-KRW`, `HYUNDAI-KRW`, `KIOXIA-JPY`, `SOFTBANK-JPY`, `CXMT-CNY`, `UNITREE-CNY`, `SIVE-SEK`
 - add history
