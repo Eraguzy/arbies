@@ -147,7 +147,6 @@ export const QFEXPairRegistry: Record<string, AssetValues> = {
   "NVTS-USD": ArbiesAssets.NVTS,
   "OPENAI-USD": ArbiesAssets.OPENAI,
   "ORCL-USD": ArbiesAssets.ORCL,
-  "OURA-USD": ArbiesAssets.OURA,
   "OUST-USD": ArbiesAssets.OUST,
   "PANW-USD": ArbiesAssets.PANW,
   "PAYP-USD": ArbiesAssets.PAYP,
