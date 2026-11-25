@@ -8,6 +8,7 @@ import { DexName, AllDexes } from "@/lib/funding/dexes/arbies";
 import { AssetAndFdg } from "@/app/api/funding/utils";
 import { AssetValues } from "@/lib/funding/assets";
 import { FundingsCtx, DexesLoadingCtx } from "./table-fundings";
+import { DexLabel } from "./dex-label";
 
 type DexFunding = {
   name: DexName,
@@ -48,7 +49,13 @@ function ComparisonCell({
   );
 }
 
-export function ComparisonModeRows({ assets }: { assets: AssetValues[] }) {
+export function ComparisonModeRows({
+  assets,
+  dexErrors,
+}: {
+  assets: AssetValues[],
+  dexErrors: Partial<Record<DexName, string>>,
+}) {
   const { selected, compared } = useContext(FundingContext);
   const isDexLoading = useContext(DexesLoadingCtx);
   const fundingsPerDex = useContext(FundingsCtx);
@@ -58,7 +65,7 @@ export function ComparisonModeRows({ assets }: { assets: AssetValues[] }) {
       {compared.map((dex) =>
         <Fragment key={dex}>
           <TableRow className="h-5 bg-accent" key={dex}>
-            <TableCell className="h-5">{dex}</TableCell>
+            <TableCell className="h-5"><DexLabel dex={dex} error={dexErrors[dex]} /></TableCell>
             {
               selected.map((sel) => (
                 <TableCell key={sel} className="h-5"></TableCell>

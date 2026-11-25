@@ -8,7 +8,8 @@ export function fetchoor(
   assets: Set<AssetValues>,
   setFundingsPerDex: React.Dispatch<React.SetStateAction<Record<DexName, AssetAndFdg[]>>>,
   setIsDexLoading: React.Dispatch<React.SetStateAction<Record<DexName, boolean>>>,
-  setIsDexFirstLoad: React.Dispatch<React.SetStateAction<Record<DexName, boolean>>>
+  setIsDexFirstLoad: React.Dispatch<React.SetStateAction<Record<DexName, boolean>>>,
+  setDexErrors: React.Dispatch<React.SetStateAction<Partial<Record<DexName, string>>>>
 ) {
   const assetsParam = Array.from(assets).join(',');
 
@@ -25,15 +26,18 @@ export function fetchoor(
     setIsDexLoading(prev => ({ ...prev, [dex]: true }));
 
     fetch(endpoint + '?' + HTTPParams.assets + '=' + assetsParam)
-      .then(res => res.json())
-      .then(data => {
-        if (data.error) {
-          console.error(`err while fetching ${dex} funding data:`, data.error);
-          return;
-        }
-        setFundingsPerDex(prev => ({ ...prev, [dex]: data || [] }));
+      .then(async res => {
+        const data = await res.json().catch(() => null); // body is not json on a next 500 or a vercel timeout
+        if (!res.ok) throw new Error(data?.error ?? 'Arbies server error (HTTP ' + res.status + ')');
+        if (!Array.isArray(data)) throw new Error('Invalid response from arbies server');
+
+        setFundingsPerDex(prev => ({ ...prev, [dex]: data }));
+        setDexErrors(prev => ({ ...prev, [dex]: undefined })); // a successful fetch clears the warning
       })
-      .catch(err => console.error(err))
+      .catch(err => {
+        console.error('err while fetching ' + dex + ' funding data:', err);
+        setDexErrors(prev => ({ ...prev, [dex]: err instanceof Error ? err.message : String(err) }));
+      })
       .finally(() => {
         setIsDexLoading(prev => ({ ...prev, [dex]: false }));
         setIsDexFirstLoad(prev => ({ ...prev, [dex]: false }));

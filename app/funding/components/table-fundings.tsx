@@ -10,6 +10,7 @@ import { AssetValues } from "@/lib/funding/assets";
 import AssetSelector from "@/components/selectors/assets";
 import { ComparisonModeRows } from "./comparison-module";
 import { FundingModeRows } from "./funding-module";
+import { DexLabel } from "./dex-label";
 
 export const FundingsCtx = createContext({} as Record<DexName, AssetAndFdg[]>);
 export const DexesLoadingCtx = createContext({} as Record<DexName, boolean>);
@@ -20,6 +21,7 @@ export default function TableFundings() {
   const [fundingsPerDex, setFundingsPerDex] = useState<Record<DexName, AssetAndFdg[]>>({} as Record<DexName, AssetAndFdg[]>);
   const [isDexLoading, setIsDexLoading] = useState<Record<DexName, boolean>>({} as Record<DexName, boolean>);
   const [isDexFirstLoad, setIsDexFirstLoad] = useState<Record<DexName, boolean>>({} as Record<DexName, boolean>); // skeletons only show on 1st dex load
+  const [dexErrors, setDexErrors] = useState<Partial<Record<DexName, string>>>({}); // last fetch error per dex
 
   useEffect(() => {
     writeStoredAssets(assets);
@@ -31,7 +33,8 @@ export default function TableFundings() {
       new Set(assets),
       setFundingsPerDex,
       setIsDexLoading,
-      setIsDexFirstLoad
+      setIsDexFirstLoad,
+      setDexErrors
     ); // immediate call
 
     const interval = setInterval(() => {
@@ -40,7 +43,8 @@ export default function TableFundings() {
         new Set(assets),
         setFundingsPerDex,
         setIsDexLoading,
-        setIsDexFirstLoad
+        setIsDexFirstLoad,
+        setDexErrors
       );
     }, 60000); // fetch every minute
 
@@ -72,7 +76,7 @@ export default function TableFundings() {
                 />
               </TableHead>
               {selected.map((dex) => (
-                <TableHead key={dex} className="w-25 bg-secondary">{dex}</TableHead>
+                <TableHead key={dex} className="w-25 bg-secondary"><DexLabel dex={dex} error={dexErrors[dex]} /></TableHead>
               ))}
             </>
           )}
@@ -83,7 +87,7 @@ export default function TableFundings() {
         <DexesLoadingCtx value={showSkeletonPerDex}>
           <TableBody>
             {comparisonMode ? (
-              <ComparisonModeRows assets={assets} />
+              <ComparisonModeRows assets={assets} dexErrors={dexErrors} />
             ) :
               <FundingModeRows assets={assets} setAssets={setAssets} />
             }
