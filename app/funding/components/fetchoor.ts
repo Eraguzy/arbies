@@ -27,12 +27,14 @@ export function fetchoor(
 
     fetch(endpoint + '?' + HTTPParams.assets + '=' + assetsParam)
       .then(async res => {
-        const data = await res.json().catch(() => null); // body is not json on a next 500 or a vercel timeout
+        // arbies error (500): data.error is empty
+        // api error (5XX, 4XX): read data.error 
+        const data = await res.json().catch(() => null);
         if (!res.ok) throw new Error(data?.error ?? 'Arbies server error (HTTP ' + res.status + ')');
         if (!Array.isArray(data)) throw new Error('Invalid response from arbies server');
 
         setFundingsPerDex(prev => ({ ...prev, [dex]: data }));
-        setDexErrors(prev => ({ ...prev, [dex]: undefined })); // a successful fetch clears the warning
+        setDexErrors(prev => ({ ...prev, [dex]: undefined })); // next success = clear last error
       })
       .catch(err => {
         console.error('err while fetching ' + dex + ' funding data:', err);

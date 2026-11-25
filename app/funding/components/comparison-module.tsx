@@ -34,16 +34,16 @@ function ComparisonCell({
           {
             isLoading
               ? <Skeleton className="w-10 h-full" />
-              : mainFundingValue !== undefined && secondFundingValue !== undefined
+              : Number.isFinite(mainFundingValue) && Number.isFinite(secondFundingValue)// null/undefined not finite => show N/A
                 ? (mainFundingValue - secondFundingValue).toFixed(2) + ' %'
                 : 'N/A'
           }
         </TableCell>
       </TooltipTrigger>
       <TooltipContent>
-        {mainFunding.name}: {mainFundingValue !== undefined ? mainFundingValue.toFixed(2) + ' %' : 'N/A'}
+        {mainFunding.name}: {Number.isFinite(mainFundingValue) ? mainFundingValue.toFixed(2) + ' %' : 'N/A'}
         <br />
-        {secondFunding.name}: {secondFundingValue !== undefined ? secondFundingValue.toFixed(2) + ' %' : 'N/A'}
+        {secondFunding.name}: {Number.isFinite(secondFundingValue) ? secondFundingValue.toFixed(2) + ' %' : 'N/A'}
       </TooltipContent>
     </Tooltip>
   );
