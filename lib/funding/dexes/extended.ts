@@ -386,9 +386,7 @@ export const ExtndDex: Dex = {
       }
     }
 
-    if (extndPairs.length === 0) {
-      return NextResponse.json({ error: "no valid pairs provided" }, { status: 400 });
-    }
+    if (extndPairs.length === 0) return NextResponse.json<AssetAndFdg[]>([]); // no requested asset is listed on Extended
 
     // fetch all markets and filter locally
     // a ?market= filter over 2048 chars gets 403
@@ -409,7 +407,7 @@ export const ExtndDex: Dex = {
         throw new DexApiError(ExtndDex.Name, url, "invalid-data");
       }
       if (result.status !== "ok" && result.status !== "OK") {
-        return NextResponse.json({ error: ExtndDex.Name + ": " + result.error?.message + " (" + result.error?.code + ")" }, { status: 502 });
+        throw new DexApiError(ExtndDex.Name, url, "invalid-data", { cause: result.error });
       }
       if (!Array.isArray(result.data) || result.data.length === 0) {
         throw new DexApiError(ExtndDex.Name, url, "invalid-data");

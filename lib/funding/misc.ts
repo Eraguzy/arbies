@@ -47,7 +47,10 @@ export async function fetchDexJSON(dex: DexName, url: string, options: RequestIn
     throw new DexApiError(dex, url, errorKind(err), { cause: err });
   }
 
-  if (!res.ok) throw new DexApiError(dex, url, "http", { status: res.status });
+  if (!res.ok) {
+    await res.body?.cancel().catch(() => { }); // free the connection
+    throw new DexApiError(dex, url, "http", { status: res.status });
+  }
 
   try {
     return await res.json();
@@ -78,19 +81,19 @@ export function settledToFundings<T>(dex: DexName, settled: PromiseSettledResult
     kinds[err.kind] = (kinds[err.kind] ?? 0) + 1;
   }
   if (errors.length === 0) return values;
-
-  console.error(dex + ": " + errors.length + "/" + settled.length + " API calls failed", kinds, errors[0]);
   if (errors.length === settled.length) throw errors.find((err) => err.kind !== "timeout") ?? errors[0]; // every call failed: the dex is down
 
+  console.error(dex + ": " + errors.length + "/" + settled.length + " API calls failed", kinds, errors[0]);
   return values;
 }
 
-/** map a dex api error to the route response
+/** log a dex api error and map it to the route response
  * @throws err if it is not a DexApiError 
  */
 export function dexErrorCatcher(dex: DexName, err: unknown): NextResponse<{ error: string }> {
   if (!(err instanceof DexApiError)) throw err; // error on arbies side
 
+  console.error(dex + ": API call failed", err);
   if (err.kind === "timeout") {
     return NextResponse.json({ error: dex + " API timed out" }, { status: 504 });
   }

@@ -127,7 +127,7 @@ export const PacificaDex: Dex = {
         throw new DexApiError(PacificaDex.Name, url, "invalid-data");
       }
       if (!result.success) {
-        return NextResponse.json({ error: "Error fetching data from Pacifica" }, { status: 502 });
+        throw new DexApiError(PacificaDex.Name, url, "invalid-data", { cause: result.error });
       }
       if (!Array.isArray(result.data) || result.data.length === 0) {
         throw new DexApiError(PacificaDex.Name, url, "invalid-data");

@@ -76,7 +76,6 @@ export const MeridianDex: Dex = {
     try {
       idsAndTickers = await getIdsAndTickers(pairs);
     } catch (err) {
-      console.error(MeridianDex.Name + ": failed to fetch products:", err);
       return dexErrorCatcher(MeridianDex.Name, err);
     }
     if (idsAndTickers.size === 0) {
