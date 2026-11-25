@@ -584,6 +584,8 @@ export const VariPairRegistry: Record<string, AssetValues> = {
 	"TENCENT": ArbiesAssets.TENCENT,
 	"VKTX": ArbiesAssets.VKTX,
 	"POPMART": ArbiesAssets.POPMART,
+	"PATH": ArbiesAssets.PATH,
+	"TEM": ArbiesAssets.TEM,
 }
 
 const VariApiUrl = "https://omni-client-api.prod.ap-northeast-1.variational.io";

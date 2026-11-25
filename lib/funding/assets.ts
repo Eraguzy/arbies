@@ -698,6 +698,7 @@ export const ArbiesAssets = {
   OURA: "OURA",
   OUST: "OUST",
   PANW: "PANW",
+  PATH: "PATH",
   PAYP: "PAYP",
   PDD: "PDD",
   PENG: "PENG",
