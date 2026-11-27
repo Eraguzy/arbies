@@ -246,7 +246,6 @@ export const ExtndPairRegistry: Record<string, AssetValues> = {
   "FIL-USD": ArbiesAssets.FIL,
   "BTW-USD": ArbiesAssets.BTW,
   "AR-USD": ArbiesAssets.AR,
-  "SKHY-USD": ArbiesAssets.SKHY,
   "AXS-USD": ArbiesAssets.AXS,
   "DUSK-USD": ArbiesAssets.DUSK,
   "STX-USD": ArbiesAssets.STX,
