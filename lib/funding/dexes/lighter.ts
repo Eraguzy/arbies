@@ -170,7 +170,6 @@ export const LighterPairRegistry: Record<string, AssetValues> = {
   "BB": ArbiesAssets.BB,
   "GRAM": ArbiesAssets.GRAM,
   "PONS": ArbiesAssets.PONS,
-  "OURA": ArbiesAssets.OURA,
   "AI": ArbiesAssets.AI,
   "BIO": ArbiesAssets.BIO,
   "DRV": ArbiesAssets.DRV,

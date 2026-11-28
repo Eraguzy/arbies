@@ -2,6 +2,5 @@
 - TCGXUSD: unknown underlying (card games)
 
 Lighter:
-- ANTHROPIC: same company as ANT, ANT kept (bigger OI)
 - US100: same index as QQQ, QQQ kept (bigger OI)
 - US500: same index as SPY, SPY kept (bigger OI)
